@@ -46,7 +46,7 @@ class BasicVSRAFT(nn.Module):
                  num_blocks=7,
                  max_residue_magnitude=10,
                  is_low_res_input=True,
-                 RAFT_pretrained=None,
+                 spynet_pretrained=None,
                  cpu_cache_length=100):
 
         super().__init__()
@@ -55,7 +55,7 @@ class BasicVSRAFT(nn.Module):
         self.cpu_cache_length = cpu_cache_length
 
         # optical flow
-        self.raft = RAFT(pretrained=RAFT_pretrained)
+        self.raft = RAFT(pretrained=spynet_pretrained)
 
         # feature extraction module
         if is_low_res_input:
