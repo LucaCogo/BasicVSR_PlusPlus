@@ -55,7 +55,7 @@ class BasicVSRAFT(nn.Module):
         self.cpu_cache_length = cpu_cache_length
 
         # optical flow
-        self.raft = RAFT(pretrained=spynet_pretrained)
+        self.raft = RAFT(spynet_pretrained)
 
         # feature extraction module
         if is_low_res_input:
@@ -138,12 +138,12 @@ class BasicVSRAFT(nn.Module):
         lqs_1 = lqs[:, :-1, :, :, :].reshape(-1, c, h, w)
         lqs_2 = lqs[:, 1:, :, :, :].reshape(-1, c, h, w)
 
-        flows_backward = self.spynet(lqs_1, lqs_2).view(n, t - 1, 2, h, w)
+        flows_backward = self.raft(lqs_1, lqs_2).view(n, t - 1, 2, h, w)
 
         if self.is_mirror_extended:  # flows_forward = flows_backward.flip(1)
             flows_forward = None
         else:
-            flows_forward = self.spynet(lqs_2, lqs_1).view(n, t - 1, 2, h, w)
+            flows_forward = self.raft(lqs_2, lqs_1).view(n, t - 1, 2, h, w)
 
         if self.cpu_cache:
             flows_backward = flows_backward.cpu()
