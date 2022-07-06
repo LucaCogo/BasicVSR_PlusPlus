@@ -55,7 +55,7 @@ class BasicVSRAFT(nn.Module):
         self.cpu_cache_length = cpu_cache_length
 
         # optical flow
-        self.raft = RAFT(spynet_pretrained)
+        self.raft = RAFT(model = spynet_pretrained, small = False)
 
         # feature extraction module
         if is_low_res_input:
