@@ -1,15 +1,14 @@
-exp_name = 'basicvsr_plusplus_ridotto'
+exp_name = 'basicvsraft_reduced'
 
 # model settings
 model = dict(
     type='BasicVSR',
     generator=dict(
-        type='BasicVSRPlusPlus',
+        type='BasicVSRAFT',
         mid_channels=64,
         num_blocks=7,
         is_low_res_input=True,
-        spynet_pretrained='https://download.openmmlab.com/mmediting/restorers/'
-        'basicvsr/spynet_20210409-c6c1bd09.pth'),
+        spynet_pretrained='../mmedit/pretrained-models/RAFT/raft-sintel.pth'),
     pixel_loss=dict(type='CharbonnierLoss', loss_weight=1.0, reduction='mean')
     )
 # model training and testing settings
