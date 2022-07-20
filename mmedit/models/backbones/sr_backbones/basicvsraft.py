@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
 import torch.nn as nn
+import argparse
 import torch.nn.functional as F
 from mmcv.cnn import constant_init
 from mmcv.ops import ModulatedDeformConv2d, modulated_deform_conv2d
@@ -55,8 +56,16 @@ class BasicVSRAFT(nn.Module):
         self.cpu_cache_length = cpu_cache_length
 
         # optical flow
-        self.raft = RAFT(spynet_pretrained)
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--model', help="restore checkpoint")
+        parser.add_argument('--path', help="dataset for evaluation")
+        parser.add_argument('--small', action='store_true', help='use small model')
+        parser.add_argument('--mixed_precision', action='store_true', help='use mixed precision')
+        parser.add_argument('--alternate_corr', action='store_true', help='use efficent correlation implementation')
+        args = parser.parse_args(['--model', spynet_pretrained])
 
+        self.raft = RAFT(args)
+        self.raft.load_state_dict(torch.load(args.model))
         # feature extraction module
         if is_low_res_input:
             self.feat_extract = ResidualBlocksWithInputConv(3, mid_channels, 5)
