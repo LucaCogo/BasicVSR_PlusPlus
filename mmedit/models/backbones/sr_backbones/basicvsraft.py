@@ -63,7 +63,6 @@ class BasicVSRAFT(nn.Module):
         parser.add_argument('--mixed_precision', action='store_true', help='use mixed precision')
         parser.add_argument('--alternate_corr', action='store_true', help='use efficent correlation implementation')
         args = parser.parse_args(['--model', spynet_pretrained])
-
         self.raft = RAFT(args)
         self.raft.load_state_dict(torch.load(args.model))
         # feature extraction module
