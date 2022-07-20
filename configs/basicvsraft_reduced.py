@@ -8,7 +8,7 @@ model = dict(
         mid_channels=64,
         num_blocks=7,
         is_low_res_input=True,
-        spynet_pretrained='../mmedit/pretrained-models/RAFT/raft-sintel.pth'),
+        spynet_pretrained='../mmedit/pretrained-models/RAFT/RAFT-sintel.pth'),
     pixel_loss=dict(type='CharbonnierLoss', loss_weight=1.0, reduction='mean')
     )
 # model training and testing settings
