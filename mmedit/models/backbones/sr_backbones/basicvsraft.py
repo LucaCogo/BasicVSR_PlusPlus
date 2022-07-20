@@ -66,8 +66,11 @@ class BasicVSRAFT(nn.Module):
         parser.add_argument('--alternate_corr', action='store_true', help='use efficient correlation implementation')
         args = parser.parse_args(['--model', spynet_pretrained])
 
+        # self.raft = torch.nn.DataParallel(RAFT(args)) # maybe should remove DataParallel?
+        # self.raft.load_state_dict(torch.load(args.model))
         self.raft = RAFT(args)
-        self.raft.load_state_dict(torch.load(args.model))
+        load_checkpoint(self.raft, args.model, strict= True)
+
         # feature extraction module
         if is_low_res_input:
             self.feat_extract = ResidualBlocksWithInputConv(3, mid_channels, 5)
