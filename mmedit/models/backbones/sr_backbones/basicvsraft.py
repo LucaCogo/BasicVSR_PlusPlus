@@ -153,12 +153,18 @@ class BasicVSRAFT(nn.Module):
         lqs_1 = lqs[:, :-1, :, :, :].reshape(-1, c, h, w)
         lqs_2 = lqs[:, 1:, :, :, :].reshape(-1, c, h, w)
 
-        flows_backward = self.raft(lqs_1, lqs_2).view(n, t - 1, 2, h, w)
+        # flows_backward = self.raft(lqs_1, lqs_2).view(n, t - 1, 2, h, w)
+        flows_backward = torch.Tensor(self.raft.forward(lqs_1, lqs_2))
+        flows_backward = torch.reshape(flows_backward, (n, t - 1, 2, h, w))
 
         if self.is_mirror_extended:  # flows_forward = flows_backward.flip(1)
             flows_forward = None
         else:
-            flows_forward = self.raft(lqs_2, lqs_1).view(n, t - 1, 2, h, w)
+            # flows_forward = self.raft(lqs_2, lqs_1).view(n, t - 1, 2, h, w)
+            # flows_forward = self.raft.forward(lqs_2, lqs_1).view(n, t - 1, 2, h, w)
+
+            flows_forward = torch.Tensor(self.raft.forward(lqs_2, lqs_1))
+            flows_forward = torch.reshape(flows_forward, (n, t - 1, 2, h, w))
 
         if self.cpu_cache:
             flows_backward = flows_backward.cpu()
