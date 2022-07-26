@@ -50,7 +50,8 @@ class BaseSRDataset(BaseDataset):
         """
         results = copy.deepcopy(self.data_infos[idx])
         results['scale'] = self.scale
-        return self.pipeline(results)
+        tmp =  self.pipeline(results)
+        return tmp
 
     def evaluate(self, results, logger=None):
         """Evaluate with different metrics.
