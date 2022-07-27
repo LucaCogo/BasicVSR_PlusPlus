@@ -1,24 +1,22 @@
-exp_name = 'basicvsr_plusplus_ridotto'
+exp_name = 'basicvsr_plusplus_c64n7_8x1_600k_reds4'
 
 # model settings
 model = dict(
     type='BasicVSR',
     generator=dict(
-        type='BasicVSRPlusPlus',
+        type='BasicVSRAFT',
         mid_channels=64,
         num_blocks=7,
         is_low_res_input=True,
-        spynet_pretrained='https://download.openmmlab.com/mmediting/restorers/'
-        'basicvsr/spynet_20210409-c6c1bd09.pth'),
-    pixel_loss=dict(type='CharbonnierLoss', loss_weight=1.0, reduction='mean')
-    )
+        spynet_pretrained='./mmedit/pretrained-models/RAFT/raft-sintel.pth'),
+    pixel_loss=dict(type='CharbonnierLoss', loss_weight=1.0, reduction='mean'))
 # model training and testing settings
 train_cfg = dict(fix_iter=5000)
 test_cfg = dict(metrics=['PSNR'], crop_border=0)
 
 # dataset settings
-train_dataset_type = 'SRFolderMultipleGTDataset'
-val_dataset_type = 'SRFolderMultipleGTDataset'
+train_dataset_type = 'SRREDSMultipleGTDataset'
+val_dataset_type = 'SRREDSMultipleGTDataset'
 test_dataset_type = 'SRFolderMultipleGTDataset'
 
 train_pipeline = [
@@ -88,28 +86,31 @@ data = dict(
         times=1000,
         dataset=dict(
             type=train_dataset_type,
-            lq_folder='../REDS_ridotto/lq_sequences_train',
-            gt_folder='../REDS_ridotto/gt_sequences_train',
+            lq_folder='../REDS_backup/zipfiles/train_sharp_bicubic/X4',
+            gt_folder='../REDS_backup/zipfiles/train_sharp',
             num_input_frames=30,
             pipeline=train_pipeline,
             scale=4,
+            val_partition='REDS4',
             test_mode=False)),
     # val
     val=dict(
         type=val_dataset_type,
-        lq_folder='../REDS_ridotto/lq_sequences_val',
-        gt_folder='../REDS_ridotto/gt_sequences_val',
+        lq_folder='../REDS_backup/zipfiles/train_sharp_bicubic/X4',
+        gt_folder='../REDS_backup/zipfiles/train_sharp',
         num_input_frames=100,
         pipeline=test_pipeline,
         scale=4,
+        val_partition='REDS4',
+        repeat=2,
         test_mode=True),
     # test
     test=dict(
         type=test_dataset_type,
-        lq_folder='../REDS_ridotto/lq_sequences_test',
-        gt_folder='../REDS_ridotto/gt_sequences_test',
+        lq_folder='data/test/LQ',
+        gt_folder='data/test/GT',
         pipeline=test_pipeline,
-        scale=4,
+        scale=1,
         test_mode=True),
 )
 
@@ -118,8 +119,7 @@ optimizers = dict(
     generator=dict(
         type='Adam',
         lr=1e-4,
-        betas=(0.9, 0.99),
-        paramwise_cfg=dict(custom_keys={'spynet': dict(lr_mult=0.25)})))
+        betas=(0.9, 0.99),))
 
 # learning policy
 total_iters = 600000
@@ -149,4 +149,3 @@ load_from = None
 resume_from = None
 workflow = [('train', 1)]
 find_unused_parameters = True
-
