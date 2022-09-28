@@ -41,6 +41,8 @@ class DistributedSampler(_DistributedSampler):
         self.seed = sync_random_seed(seed)
 
         # to avoid padding bug when meeting too small dataset
+        print(f"LEN DATASET: {len(dataset)}")
+
         if len(dataset) < self.num_replicas * samples_per_gpu:
             raise ValueError(
                 'You may use too small dataset and our distributed '

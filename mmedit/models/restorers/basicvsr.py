@@ -101,7 +101,29 @@ class BasicVSR(BasicRestorer):
             self.generator.requires_grad_(True)
 
         outputs = self(**data_batch, test_mode=False)
+        output = outputs['results']['output']
+        gt = outputs['results']['gt']
+
         loss, log_vars = self.parse_losses(outputs.pop('losses'))
+
+        crop_border = self.test_cfg.crop_border
+        convert_to = self.test_cfg.get('convert_to', None)
+        for metric in self.test_cfg.metrics:
+            if output.ndim == 5:  # a sequence: (n, t, c, h, w)
+                avg = []
+                for i in range(0, output.size(1)):
+                    output_i = tensor2img(output[:, i, :, :, :])
+                    gt_i = tensor2img(gt[:, i, :, :, :])
+                    avg.append(self.allowed_metrics[metric](
+                        output_i, gt_i, crop_border, convert_to=convert_to))
+                log_vars[metric] = np.mean(avg).item()
+
+            elif output.ndim == 4:  # an image: (n, c, t, w), for Vimeo-90K-T
+                output_img = tensor2img(output)
+                gt_img = tensor2img(gt)
+                value = self.allowed_metrics[metric](
+                    output_img, gt_img, crop_border, convert_to=convert_to)
+                log_vars[metric] = value.item()
 
         # optimize
         optimizer['generator'].zero_grad()
@@ -138,6 +160,8 @@ class BasicVSR(BasicRestorer):
                     gt_i = tensor2img(gt[:, i, :, :, :])
                     avg.append(self.allowed_metrics[metric](
                         output_i, gt_i, crop_border, convert_to=convert_to))
+                    
+                    
                 eval_result[metric] = np.mean(avg)
             elif output.ndim == 4:  # an image: (n, c, t, w), for Vimeo-90K-T
                 output_img = tensor2img(output)
@@ -145,6 +169,19 @@ class BasicVSR(BasicRestorer):
                 value = self.allowed_metrics[metric](
                     output_img, gt_img, crop_border, convert_to=convert_to)
                 eval_result[metric] = value
+                
+        #if output.ndim == 5:
+        #    loss = []
+        #    for i in range(0, output.size(1)):
+        #        output_i = output[:, i, :, :, :]
+        #        gt_i = gt[:, i, :, :, :]
+
+        #        loss.append(self.pixel_loss( 
+        #            output_i, gt_i, crop_border))
+        #    eval_result['pixel_loss'] = np.mean(loss)
+
+        loss = self.pixel_loss(output, gt)
+        eval_result['pixel_loss'] = loss.item()
 
         return eval_result
 

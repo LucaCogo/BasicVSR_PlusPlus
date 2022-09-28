@@ -76,8 +76,8 @@ demo_pipeline = [
 
 data = dict(
     workers_per_gpu=6,
-    train_dataloader=dict(samples_per_gpu=1, drop_last=True),  # 8 gpus
-    val_dataloader=dict(samples_per_gpu=1),
+    train_dataloader=dic t(samples_per_gpu=2, drop_last=True),  # 8 gpus
+    val_dataloader=dict(samples_per_gpu=2),
     test_dataloader=dict(samples_per_gpu=1, workers_per_gpu=1),
 
     # train
@@ -86,8 +86,8 @@ data = dict(
         times=1000,
         dataset=dict(
             type=train_dataset_type,
-            lq_folder='../REDS_backup/zipfiles/train_sharp_bicubic/X4',
-            gt_folder='../REDS_backup/zipfiles/train_sharp',
+            lq_folder='../REDS/zipfiles/train_sharp_bicubic/X4',
+            gt_folder='../REDS/zipfiles/train_sharp',
             num_input_frames=30,
             pipeline=train_pipeline,
             scale=4,
@@ -96,8 +96,8 @@ data = dict(
     # val
     val=dict(
         type=val_dataset_type,
-        lq_folder='../REDS_backup/zipfiles/train_sharp_bicubic/X4',
-        gt_folder='../REDS_backup/zipfiles/train_sharp',
+        lq_folder='../REDS/zipfiles/train_sharp_bicubic/X4',
+        gt_folder='../REDS/zipfiles/train_sharp',
         num_input_frames=100,
         pipeline=test_pipeline,
         scale=4,

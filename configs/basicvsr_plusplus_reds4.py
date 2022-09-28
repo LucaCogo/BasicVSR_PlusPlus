@@ -1,4 +1,6 @@
-exp_name = 'basicvsr_plusplus_c64n7_8x1_600k_reds4'
+# exp_name = 'basicvsr_plusplus_c64n7_8x1_600k_reds4'
+
+exp_name = 'basicvsr_plusplus_reds4_test-bs8'
 
 # model settings
 model = dict(
@@ -12,7 +14,7 @@ model = dict(
         'basicvsr/spynet_20210409-c6c1bd09.pth'),
     pixel_loss=dict(type='CharbonnierLoss', loss_weight=1.0, reduction='mean'))
 # model training and testing settings
-train_cfg = dict(fix_iter=5000)
+train_cfg = dict(metrics = ['PSNR'], fix_iter=5000)
 test_cfg = dict(metrics=['PSNR'], crop_border=0)
 
 # dataset settings
@@ -76,8 +78,8 @@ demo_pipeline = [
 ]
 
 data = dict(
-    workers_per_gpu=6,
-    train_dataloader=dict(samples_per_gpu=1, drop_last=True),  # 8 gpus
+    workers_per_gpu=2,
+    train_dataloader=dict(samples_per_gpu=2, drop_last=True),  # 8 gpus
     val_dataloader=dict(samples_per_gpu=1),
     test_dataloader=dict(samples_per_gpu=1, workers_per_gpu=1),
 
@@ -87,8 +89,8 @@ data = dict(
         times=1000,
         dataset=dict(
             type=train_dataset_type,
-            lq_folder='../REDS_backup/zipfiles/train_sharp_bicubic/X4',
-            gt_folder='../REDS_backup/zipfiles/train_sharp',
+            lq_folder='../REDS/zipfiles/train_sharp_bicubic/X4',
+            gt_folder='../REDS/zipfiles/train_sharp',
             num_input_frames=30,
             pipeline=train_pipeline,
             scale=4,
@@ -97,13 +99,13 @@ data = dict(
     # val
     val=dict(
         type=val_dataset_type,
-        lq_folder='../REDS_backup/zipfiles/train_sharp_bicubic/X4',
-        gt_folder='../REDS_backup/zipfiles/train_sharp',
+        lq_folder='../REDS/zipfiles/train_sharp_bicubic/X4',
+        gt_folder='../REDS/zipfiles/train_sharp',
         num_input_frames=100,
         pipeline=test_pipeline,
         scale=4,
         val_partition='REDS4',
-        repeat=2,
+        repeat=4,
         test_mode=True),
     # test
     test=dict(
@@ -124,22 +126,22 @@ optimizers = dict(
         paramwise_cfg=dict(custom_keys={'spynet': dict(lr_mult=0.25)})))
 
 # learning policy
-total_iters = 600000
+total_iters = 10000
 lr_config = dict(
     policy='CosineRestart',
     by_epoch=False,
-    periods=[600000],
+    periods=[10000],
     restart_weights=[1],
     min_lr=1e-7)
 
-checkpoint_config = dict(interval=5000, save_optimizer=True, by_epoch=False)
+checkpoint_config = dict(interval= 500, save_optimizer=True, by_epoch=False)
 # remove gpu_collect=True in non distributed training
-evaluation = dict(interval=5000, save_image=False, gpu_collect=True)
+evaluation = dict(interval=500, save_image=False, gpu_collect=True)
 log_config = dict(
     interval=100,
     hooks=[
         dict(type='TextLoggerHook', by_epoch=False),
-        # dict(type='TensorboardLoggerHook'),
+        dict(type='TensorboardLoggerHook'),
     ])
 visual_config = None
 
