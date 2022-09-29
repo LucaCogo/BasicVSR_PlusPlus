@@ -28,7 +28,7 @@ class CorrBlock:
             self.corr_pyramid.append(corr)
 
     def __call__(self, coords):
-        print(f"coords --> {coords.shape}")
+        #print(f"coords --> {coords.shape}")
 
         r = self.radius
         coords = coords.permute(0, 2, 3, 1)
