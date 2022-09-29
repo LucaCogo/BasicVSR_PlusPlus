@@ -27,6 +27,7 @@ class RAFT(nn.Module):
         self.args = args
 
         if args.small:
+            print("Using small version (1M params) of RAFT")
             self.hidden_dim = hdim = 96
             self.context_dim = cdim = 64
             args.corr_levels = 4
@@ -114,6 +115,8 @@ class RAFT(nn.Module):
             inp = torch.relu(inp)
 
         coords0, coords1 = self.initialize_flow(image1)
+
+        # print(f"coords0 --> {coords0.shape} | coords1 --> {coords1.shape}")
 
         if flow_init is not None:
             coords1 = coords1 + flow_init

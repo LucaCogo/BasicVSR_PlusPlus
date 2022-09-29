@@ -8,6 +8,7 @@ model = dict(
         mid_channels=64,
         num_blocks=7,
         is_low_res_input=True,
+        small=False,
         spynet_pretrained='./mmedit/pretrained-models/RAFT/raft-sintel.pth'),
     pixel_loss=dict(type='CharbonnierLoss', loss_weight=1.0, reduction='mean'))
 # model training and testing settings
@@ -76,7 +77,7 @@ demo_pipeline = [
 
 data = dict(
     workers_per_gpu=6,
-    train_dataloader=dic t(samples_per_gpu=2, drop_last=True),  # 8 gpus
+    train_dataloader=dict(samples_per_gpu=2, drop_last=True),  # 8 gpus
     val_dataloader=dict(samples_per_gpu=2),
     test_dataloader=dict(samples_per_gpu=1, workers_per_gpu=1),
 

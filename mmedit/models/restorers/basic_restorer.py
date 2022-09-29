@@ -72,6 +72,7 @@ class BasicRestorer(BaseModel):
         """
 
         if test_mode:
+            # print(f"Test --> lq: {lq.shape} | gt: {gt.shape}")
             return self.forward_test(lq, gt, **kwargs)
 
         return self.forward_train(lq, gt)
@@ -86,6 +87,8 @@ class BasicRestorer(BaseModel):
         Returns:
             Tensor: Output tensor.
         """
+
+        # print(f"Train --> lq: {lq.shape} | gt: {gt.shape}")
         losses = dict()
         output = self.generator(lq)
         loss_pix = self.pixel_loss(output, gt)
@@ -137,6 +140,9 @@ class BasicRestorer(BaseModel):
         Returns:
             dict: Output results.
         """
+
+
+
         output = self.generator(lq)
         if self.test_cfg is not None and self.test_cfg.get('metrics', None):
             assert gt is not None, (

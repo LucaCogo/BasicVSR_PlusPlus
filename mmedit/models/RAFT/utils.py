@@ -55,13 +55,18 @@ def forward_interpolate(flow):
 
 
 def bilinear_sampler(img, coords, mode='bilinear', mask=False):
+    # print(f"img: {img.shape} | coords: {coords.shape}")
+
     """ Wrapper for grid_sample, uses pixel coordinates """
     H, W = img.shape[-2:]
     xgrid, ygrid = coords.split([1,1], dim=-1)
+    # print(f"xgrid --> {xgrid.shape} | ygrid --> {ygrid.shape}")
     xgrid = 2*xgrid/(W-1) - 1
     ygrid = 2*ygrid/(H-1) - 1
 
     grid = torch.cat([xgrid, ygrid], dim=-1)
+
+    # print(f"Img & grid shapes --> img: {img.shape} | grid: {grid.shape}")
     img = F.grid_sample(img, grid, align_corners=True)
 
     if mask:

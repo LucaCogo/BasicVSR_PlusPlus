@@ -49,6 +49,7 @@ class BasicVSRAFT(nn.Module):
                  num_blocks=7,
                  max_residue_magnitude=10,
                  is_low_res_input=True,
+                 small=False,
                  spynet_pretrained=None,
                  cpu_cache_length=100):
 
@@ -64,7 +65,11 @@ class BasicVSRAFT(nn.Module):
         parser.add_argument('--small', action='store_true', help='use small model')
         parser.add_argument('--mixed_precision', action='store_true', help='use mixed precision')
         parser.add_argument('--alternate_corr', action='store_true', help='use efficient correlation implementation')
-        args = parser.parse_args(['--model', spynet_pretrained])
+
+        if small:
+            args = parser.parse_args(['--model', spynet_pretrained, '--small'])
+        else:
+            args = parser.parse_args(['--model', spynet_pretrained])
 
 
         # self.raft = torch.nn.DataParallel(RAFT(args)) # maybe should remove DataParallel?

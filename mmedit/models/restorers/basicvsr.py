@@ -98,6 +98,7 @@ class BasicVSR(BasicRestorer):
                         v.requires_grad_(False)
         elif self.step_counter == self.fix_iter:
             # train all the parameters
+            print("All the parameters (also the optical flow ones) will be trained from now on")
             self.generator.requires_grad_(True)
 
         outputs = self(**data_batch, test_mode=False)

@@ -1,6 +1,6 @@
 # exp_name = 'basicvsr_plusplus_c64n7_8x1_600k_reds4'
 
-exp_name = 'basicvsr_plusplus_reds4_test-bs8'
+exp_name = 'basicvsr_plusplus_reds4_provevarie'
 
 # model settings
 model = dict(
@@ -136,9 +136,9 @@ lr_config = dict(
 
 checkpoint_config = dict(interval= 500, save_optimizer=True, by_epoch=False)
 # remove gpu_collect=True in non distributed training
-evaluation = dict(interval=500, save_image=False, gpu_collect=True)
+evaluation = dict(interval=10, save_image=False, gpu_collect=True)
 log_config = dict(
-    interval=100,
+    interval=5,
     hooks=[
         dict(type='TextLoggerHook', by_epoch=False),
         dict(type='TensorboardLoggerHook'),
