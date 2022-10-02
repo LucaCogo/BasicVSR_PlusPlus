@@ -8,12 +8,13 @@ model = dict(
         mid_channels=64,
         num_blocks=7,
         is_low_res_input=True,
-        spynet_pretrained='./mmedit/pretrained-models/RAFT/raft-sintel.pth'),
+        small=True,
+        spynet_pretrained='./mmedit/pretrained-models/RAFT/raft-small.pth'),
     pixel_loss=dict(type='CharbonnierLoss', loss_weight=1.0, reduction='mean')
     )
 # model training and testing settings
-train_cfg = dict(fix_iter=5000)
-test_cfg = dict(metrics=['PSNR'], crop_border=0)
+train_cfg = dict(fix_iter=15)
+test_cfg = dict(metrics=['PSNR', 'SSIM'], crop_border=0)
 
 # dataset settings
 train_dataset_type = 'SRFolderMultipleGTDataset'

@@ -6,7 +6,7 @@ import torch.nn.functional as F
 from mmedit.models.RAFT.update import BasicUpdateBlock, SmallUpdateBlock
 from mmedit.models.RAFT.extractor import BasicEncoder, SmallEncoder
 from mmedit.models.RAFT.corr import CorrBlock, AlternateCorrBlock
-from mmedit.models.RAFT.utils import bilinear_sampler, coords_grid, upflow8
+from mmedit.models.RAFT.utils import bilinear_sampler, coords_grid, upflow8, InputPadder
 
 try:
     autocast = torch.cuda.amp.autocast
@@ -87,6 +87,11 @@ class RAFT(nn.Module):
     def forward(self, image1, image2, iters=12, flow_init=None, upsample=True, test_mode=False):
         """ Estimate optical flow between pair of frames """
 
+        padder = InputPadder(image1.shape)
+        image1, image2 = padder.pad(image1, image2)
+
+
+
         image1 = 2 * (image1 / 255.0) - 1.0
         image2 = 2 * (image2 / 255.0) - 1.0
 
@@ -116,8 +121,6 @@ class RAFT(nn.Module):
 
         coords0, coords1 = self.initialize_flow(image1)
 
-        # print(f"coords0 --> {coords0.shape} | coords1 --> {coords1.shape}")
-
         if flow_init is not None:
             coords1 = coords1 + flow_init
 
@@ -143,5 +146,7 @@ class RAFT(nn.Module):
 
         if test_mode:
             return coords1 - coords0, flow_up
+
+        flow_predictions = [padder.unpad(x) for x in flow_predictions]
 
         return flow_predictions
