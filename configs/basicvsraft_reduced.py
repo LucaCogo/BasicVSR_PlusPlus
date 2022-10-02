@@ -139,7 +139,7 @@ log_config = dict(
     interval=5,
     hooks=[
         dict(type='TextLoggerHook', by_epoch=False),
-        # dict(type='TensorboardLoggerHook'),
+        dict(type='TensorboardLoggerHook'),
     ])
 visual_config = None
 
