@@ -50,6 +50,7 @@ class BasicVSRAFT(nn.Module):
                  max_residue_magnitude=10,
                  is_low_res_input=True,
                  small=False,
+                 iters=12, # Number of iterations for RAFT
                  spynet_pretrained=None,
                  cpu_cache_length=100):
 
@@ -76,6 +77,8 @@ class BasicVSRAFT(nn.Module):
         # self.raft.load_state_dict(torch.load(args.model))
         self.raft = RAFT(args)
         load_checkpoint(self.raft, args.model, strict= True)
+
+        self.iters = iters
 
         # feature extraction module
         if is_low_res_input:
@@ -158,15 +161,13 @@ class BasicVSRAFT(nn.Module):
         lqs_1 = lqs[:, :-1, :, :, :].reshape(-1, c, h, w)
         lqs_2 = lqs[:, 1:, :, :, :].reshape(-1, c, h, w)
 
-        flows_backward = self.raft.forward(lqs_1, lqs_2)
-        flows_backward = flows_backward[0]
+        _, flows_backward = self.raft.forward(lqs_1, lqs_2, self.iters, test_mode=True)
         flows_backward = flows_backward.view(n, t - 1, 2, h, w)
 
         if self.is_mirror_extended:  # flows_forward = flows_backward.flip(1)
             flows_forward = None
         else:
-            flows_forward = self.raft.forward(lqs_2, lqs_1)
-            flows_forward = flows_forward[0]
+            _, flows_forward = self.raft.forward(lqs_2, lqs_1, self.iters, test_mode=True)
             flows_forward = flows_forward.view(n, t - 1, 2, h, w)
 
         if self.cpu_cache:

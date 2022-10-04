@@ -11,6 +11,7 @@ model = dict(
         num_blocks=7,
         is_low_res_input=True,
         small=True,
+        iters = 32,
         spynet_pretrained='./mmedit/pretrained-models/RAFT/raft-small.pth'),
     pixel_loss=dict(type='CharbonnierLoss', loss_weight=1.0, reduction='mean'))
 # model training and testing settings

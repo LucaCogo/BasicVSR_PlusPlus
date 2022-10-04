@@ -90,8 +90,6 @@ class RAFT(nn.Module):
         padder = InputPadder(image1.shape)
         image1, image2 = padder.pad(image1, image2)
 
-
-
         image1 = 2 * (image1 / 255.0) - 1.0
         image2 = 2 * (image2 / 255.0) - 1.0
 
