@@ -142,9 +142,11 @@ class RAFT(nn.Module):
 
             flow_predictions.append(flow_up)
 
-        if test_mode:
-            return coords1 - coords0, flow_up
-
         flow_predictions = [padder.unpad(x) for x in flow_predictions]
+
+        if test_mode:
+            return coords1 - coords0, flow_predictions[-1]
+
+
 
         return flow_predictions
