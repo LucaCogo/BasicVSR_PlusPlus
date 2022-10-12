@@ -1,4 +1,4 @@
-exp_name = 'basicvsr_plusplus_ridotto'
+exp_name = 'basicvsr_plusplus_reduced_exp'
 
 # model settings
 model = dict(
@@ -78,8 +78,8 @@ demo_pipeline = [
 
 data = dict(
     workers_per_gpu=6,
-    train_dataloader=dict(samples_per_gpu=2, drop_last=True),  # 8 gpus
-    val_dataloader=dict(samples_per_gpu=2),
+    train_dataloader=dict(samples_per_gpu=1, drop_last=True),  # 8 gpus
+    val_dataloader=dict(samples_per_gpu=1),
     test_dataloader=dict(samples_per_gpu=1, workers_per_gpu=1),
 
     # train
@@ -122,22 +122,22 @@ optimizers = dict(
         paramwise_cfg=dict(custom_keys={'spynet': dict(lr_mult=0.25)})))
 
 # learning policy
-total_iters = 600000
+total_iters = 500
 lr_config = dict(
     policy='CosineRestart',
     by_epoch=False,
-    periods=[600000],
+    periods=[500],
     restart_weights=[1],
     min_lr=1e-7)
 
-checkpoint_config = dict(interval=5000, save_optimizer=True, by_epoch=False)
+checkpoint_config = dict(interval=500, save_optimizer=True, by_epoch=False)
 # remove gpu_collect=True in non distributed training
-evaluation = dict(interval=5000, save_image=False, gpu_collect=True)
+evaluation = dict(interval=50, save_image=False, gpu_collect=True)
 log_config = dict(
-    interval=100,
+    interval=25,
     hooks=[
         dict(type='TextLoggerHook', by_epoch=False),
-        # dict(type='TensorboardLoggerHook'),
+        dict(type='TensorboardLoggerHook'),
     ])
 visual_config = None
 
