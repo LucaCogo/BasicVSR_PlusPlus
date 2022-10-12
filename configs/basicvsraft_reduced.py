@@ -1,4 +1,4 @@
-exp_name = 'basicvsraft_reduced'
+exp_name = 'basicvsraft_reduced_exp'
 
 # model settings
 model = dict(
@@ -14,7 +14,7 @@ model = dict(
     pixel_loss=dict(type='CharbonnierLoss', loss_weight=1.0, reduction='mean')
     )
 # model training and testing settings
-train_cfg = dict(fix_iter=15)
+train_cfg = dict(fix_iter=5000)
 test_cfg = dict(metrics=['PSNR', 'SSIM'], crop_border=0)
 
 # dataset settings
@@ -125,19 +125,19 @@ optimizers = dict(
     )
 
 # learning policy
-total_iters = 600000
+total_iters = 500
 lr_config = dict(
     policy='CosineRestart',
     by_epoch=False,
-    periods=[600000],
+    periods=[500],
     restart_weights=[1],
     min_lr=1e-7)
 
-checkpoint_config = dict(interval=20, save_optimizer=True, by_epoch=False)
+checkpoint_config = dict(interval=500, save_optimizer=True, by_epoch=False)
 # remove gpu_collect=True in non distributed training
-evaluation = dict(interval=10, save_image=False, gpu_collect=True)
+evaluation = dict(interval=50, save_image=False, gpu_collect=True)
 log_config = dict(
-    interval=5,
+    interval=25,
     hooks=[
         dict(type='TextLoggerHook', by_epoch=False),
         dict(type='TensorboardLoggerHook'),
