@@ -140,6 +140,34 @@ class BasicVSRAFT(nn.Module):
             if torch.norm(lqs_1 - lqs_2.flip(1)) == 0:
                 self.is_mirror_extended = True
 
+    def viz(self, img, flo, count = ""):
+        import cv2
+        import numpy as np
+        from mmedit.models.RAFT.utils import flow_to_image
+        import os
+
+        OUT_FOLDER = "raft-s_norfix4"
+
+        img = img.permute(1,2,0).cpu().numpy()
+        img *= 255.0
+        flo = flo.permute(1,2,0).cpu().numpy()
+        
+        # map flow to rgb image
+        flo = flow_to_image(flo)
+        img_flo = np.concatenate([img, flo], axis=0)
+        img_flo = cv2.cvtColor(img_flo, cv2.COLOR_RGB2BGR)
+
+
+        path = OUT_FOLDER + "-estimates"
+        if not os.path.exists(path):
+            os.mkdir(path)
+        
+        imname =  OUT_FOLDER + "_frame_" + str(count) + ".png"
+        filename = os.path.join(path, imname)
+        cv2.imwrite(filename, img_flo)
+        print(f"Saved to {filename}")
+
+
     def compute_flow(self, lqs):
         """Compute optical flow using SPyNet for feature alignment.
 
@@ -157,12 +185,22 @@ class BasicVSRAFT(nn.Module):
                 backward-time propagation (current to next).
         """
 
+        self.raft.eval()
+
         n, t, c, h, w = lqs.size()
+
+        lqs *= 255.0
         lqs_1 = lqs[:, :-1, :, :, :].reshape(-1, c, h, w)
         lqs_2 = lqs[:, 1:, :, :, :].reshape(-1, c, h, w)
 
         _, flows_backward = self.raft.forward(lqs_1, lqs_2, self.iters, test_mode=True)
+        
+        #if lqs_1.shape[0]>30:
+        #  for count, image in enumerate(lqs_1):
+        #      self.viz(image, flows_backward[count], count) 
+        
         flows_backward = flows_backward.view(n, t - 1, 2, h, w)
+
 
         if self.is_mirror_extended:  # flows_forward = flows_backward.flip(1)
             flows_forward = None
