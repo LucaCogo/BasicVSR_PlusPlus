@@ -188,12 +188,11 @@ class BasicVSRAFT(nn.Module):
         self.raft.eval()
 
         n, t, c, h, w = lqs.size()
-
-        lqs *= 255.0
+        
         lqs_1 = lqs[:, :-1, :, :, :].reshape(-1, c, h, w)
         lqs_2 = lqs[:, 1:, :, :, :].reshape(-1, c, h, w)
 
-        _, flows_backward = self.raft.forward(lqs_1, lqs_2, self.iters, test_mode=True)
+        _, flows_backward = self.raft.forward(lqs_1*255.0, lqs_2*255.0, self.iters, test_mode=True)
         
         #if lqs_1.shape[0]>30:
         #  for count, image in enumerate(lqs_1):
@@ -205,7 +204,7 @@ class BasicVSRAFT(nn.Module):
         if self.is_mirror_extended:  # flows_forward = flows_backward.flip(1)
             flows_forward = None
         else:
-            _, flows_forward = self.raft.forward(lqs_2, lqs_1, self.iters, test_mode=True)
+            _, flows_forward = self.raft.forward(lqs_2*255.0, lqs_1*255.0, self.iters, test_mode=True)
             flows_forward = flows_forward.view(n, t - 1, 2, h, w)
 
         if self.cpu_cache:
