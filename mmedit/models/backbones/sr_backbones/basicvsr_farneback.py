@@ -121,11 +121,10 @@ class BasicVSR_Farneback(nn.Module):
 
     def viz(self, img, flo, count = ""):
 
-        OUT_FOLDER = "raft-s_norfix4"
+        OUT_FOLDER = "farneback_1"
 
         img = img.permute(1,2,0).cpu().numpy()
         img *= 255.0
-        flo = flo.permute(1,2,0).cpu().numpy()
         
         # map flow to rgb image
         flo = flow_to_image(flo)
@@ -147,10 +146,10 @@ class BasicVSR_Farneback(nn.Module):
         n, t, c, h, w = lqs.size() 
         lqs = lqs.reshape(t, c, h, w)
 
-        frame1 = lqs[0].cpu().numpy()
-        flows_backward = [] 
+        frame1 = lqs[0].cpu().numpy().transpose(1,2,0)
+        flows = [] 
         for frame2 in lqs[1:]:
-            frame2 = frame2.cpu().numpy()
+            frame2 = frame2.cpu().numpy().transpose(1,2,0)
             prvs = cv2.cvtColor(frame1*255.0, cv2.COLOR_BGR2GRAY)
             nxt = cv2.cvtColor(frame2*255.0, cv2.COLOR_BGR2GRAY)
 
@@ -158,6 +157,8 @@ class BasicVSR_Farneback(nn.Module):
             flows.append(flow)
 
             frame1 = frame2
+
+        flows = np.array(flows)
 
         return torch.from_numpy(flows).cuda()
 
@@ -177,7 +178,7 @@ class BasicVSR_Farneback(nn.Module):
                 'flows_backward' corresponds to the flows used for
                 backward-time propagation (current to next).
         """
-        
+        n, t, c, h, w = lqs.size() 
         flows_backward = self.farneback_flow(lqs)
 
         # if lqs.shape[0]>30:
@@ -185,12 +186,12 @@ class BasicVSR_Farneback(nn.Module):
         #      self.viz(image, flows_backward[count], count) 
         
         flows_backward = flows_backward.view(n, t - 1, 2, h, w)
-
+        
 
         if self.is_mirror_extended:  # flows_forward = flows_backward.flip(1)
             flows_forward = None
         else:
-            flows_forward = self.farneback_flow(lqs.flip(0)).flip(0)
+            flows_forward = self.farneback_flow(lqs.flip(0)).flip(0).view(n, t - 1, 2, h, w).view(n, t - 1, 2, h, w)
 
         if self.cpu_cache:
             flows_backward = flows_backward.cpu()
