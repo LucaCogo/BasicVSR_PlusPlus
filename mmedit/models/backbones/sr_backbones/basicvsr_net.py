@@ -417,4 +417,5 @@ class SPyNetBasicModule(nn.Module):
         Returns:
             Tensor: Refined flow with shape (b, 2, h, w)
         """
+
         return self.basic_module(tensor_input)

@@ -147,6 +147,4 @@ class RAFT(nn.Module):
         if test_mode:
             return coords1 - coords0, flow_predictions[-1]
 
-
-
         return flow_predictions
