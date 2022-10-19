@@ -2,16 +2,16 @@ exp_name = 'basicvsr_farneback_reduced_exp'
 
 # model settings
 model = dict(
-    type='BasicVSR_Farneback',
+    type='BasicVSR',
     generator=dict(
-        type='BasicVSR',
+        type='BasicVSR_Farneback',
         mid_channels=64,
         num_blocks=7,
-        is_low_res_input=True,
+        is_low_res_input=True),
     pixel_loss=dict(type='CharbonnierLoss', loss_weight=1.0, reduction='mean')
     )
 # model training and testing settings
-# train_cfg = dict(fix_iter=5000)
+train_cfg = dict(fix_iter=5000)
 test_cfg = dict(metrics=['PSNR', 'SSIM'], crop_border=0)
 
 # dataset settings
