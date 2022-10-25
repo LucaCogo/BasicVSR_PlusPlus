@@ -2,4 +2,6 @@
 from .sr_backbones import BasicVSRPlusPlus
 from .sr_backbones import BasicVSRAFT
 from .sr_backbones import BasicVSR_Farneback
-__all__ = ['BasicVSRPlusPlus', 'BasicVSRAFT', 'BasicVSR_Farneback']
+from .sr_backbones import BasicVSRSPyNet_Original
+
+__all__ = ['BasicVSRPlusPlus', 'BasicVSRAFT', 'BasicVSR_Farneback', 'BasicVSRSPyNet_Original']

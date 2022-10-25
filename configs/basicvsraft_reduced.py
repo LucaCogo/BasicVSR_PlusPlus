@@ -4,13 +4,11 @@ exp_name = 'basicvsraft_reduced_exp'
 model = dict(
     type='BasicVSR',
     generator=dict(
-        type='BasicVSRAFT',
+        type='BasicVSRSPyNet_Original',
         mid_channels=64,
         num_blocks=7,
         is_low_res_input=True,
-        small=True,
-        iters = 32,
-        spynet_pretrained='./mmedit/pretrained-models/RAFT/raft-small.pth'),
+        spynet_pretrained='./mmedit/pretrained-models/SPyNet/network-sintel-final.pytorch'),
     pixel_loss=dict(type='CharbonnierLoss', loss_weight=1.0, reduction='mean')
     )
 # model training and testing settings
@@ -125,19 +123,19 @@ optimizers = dict(
     )
 
 # learning policy
-total_iters = 500
+total_iters = 1000
 lr_config = dict(
     policy='CosineRestart',
     by_epoch=False,
-    periods=[500],
+    periods=[1000],
     restart_weights=[1],
     min_lr=1e-7)
 
-checkpoint_config = dict(interval=500, save_optimizer=True, by_epoch=False)
+checkpoint_config = dict(interval=1000, save_optimizer=True, by_epoch=False)
 # remove gpu_collect=True in non distributed training
-evaluation = dict(interval=50, save_image=False, gpu_collect=True)
+evaluation = dict(interval=100, save_image=False, gpu_collect=True)
 log_config = dict(
-    interval=25,
+    interval=50,
     hooks=[
         dict(type='TextLoggerHook', by_epoch=False),
         dict(type='TensorboardLoggerHook'),

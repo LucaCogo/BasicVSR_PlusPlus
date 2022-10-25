@@ -248,7 +248,7 @@ class SPyNet(nn.Module):
         elif pretrained is not None:
             raise TypeError('[pretrained] should be str or None, '
                             f'but got {type(pretrained)}.')
-
+        
         self.register_buffer(
             'mean',
             torch.Tensor([0.485, 0.456, 0.406]).view(1, 3, 1, 1))
