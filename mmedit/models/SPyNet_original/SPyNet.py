@@ -1,3 +1,9 @@
+import numpy as np
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+
 class Network(torch.nn.Module):
     def __init__(self, pretrained):
         super().__init__()
@@ -50,7 +56,7 @@ class Network(torch.nn.Module):
         #     self.load_state_dict(model_dict)
             
         # else:
-        self.load_state_dict({ strKey.replace('module', 'net'): tenWeight for strKey, tenWeight in torch.load("models/network-" + MODEL + ".pytorch", map_location=torch.device(DEVICE)).items()})
+        self.load_state_dict({ strKey.replace('module', 'net'): tenWeight for strKey, tenWeight in torch.load(pretrained, map_location=torch.device(DEVICE)).items()})
             # print({strKey.replace('basic_net', 'netBasic'): tenWeight for strKey, tenWeight in torch.load.hub.load_state_dict_from_url("models/network-" + MODEL + ".pytorch", map_location=torch.device(DEVICE)).items()})
 
             # self.load_state_dict({strKey.replace('basic_net', 'netBasic'): tenWeight for strKey, tenWeight in torch.load.hub.load_state_dict_from_url("models/network-" + MODEL + ".pytorch", map_location=torch.device(DEVICE)).items()})
@@ -60,6 +66,7 @@ class Network(torch.nn.Module):
 
     def forward(self, tenOne, tenTwo):
         tenFlow = []
+        self.backwarp_tenGrid = {}
 
         tenOne = [ self.netPreprocess(tenOne) ]
         tenTwo = [ self.netPreprocess(tenTwo) ]
@@ -79,11 +86,24 @@ class Network(torch.nn.Module):
             if tenUpsampled.shape[2] != tenOne[intLevel].shape[2]: tenUpsampled = torch.nn.functional.pad(input=tenUpsampled, pad=[ 0, 0, 0, 1 ], mode='replicate')
             if tenUpsampled.shape[3] != tenOne[intLevel].shape[3]: tenUpsampled = torch.nn.functional.pad(input=tenUpsampled, pad=[ 0, 1, 0, 0 ], mode='replicate')
 
-            tenFlow = self.netBasic[intLevel](torch.cat([ tenOne[intLevel], backwarp(tenInput=tenTwo[intLevel], tenFlow=tenUpsampled), tenUpsampled ], 1)) + tenUpsampled
+            tenFlow = self.netBasic[intLevel](torch.cat([ tenOne[intLevel], self.backwarp(tenInput=tenTwo[intLevel], tenFlow=tenUpsampled), tenUpsampled ], 1)) + tenUpsampled
         # end
 
         return tenFlow
     # end
+
+    
+    def backwarp(tenInput, tenFlow):
+        if str(tenFlow.shape) not in self.backwarp_tenGrid:
+            tenHor = torch.linspace(-1.0 + (1.0 / tenFlow.shape[3]), 1.0 - (1.0 / tenFlow.shape[3]), tenFlow.shape[3]).view(1, 1, 1, -1).repeat(1, 1, tenFlow.shape[2], 1)
+            tenVer = torch.linspace(-1.0 + (1.0 / tenFlow.shape[2]), 1.0 - (1.0 / tenFlow.shape[2]), tenFlow.shape[2]).view(1, 1, -1, 1).repeat(1, 1, 1, tenFlow.shape[3])
+
+            self.backwarp_tenGrid[str(tenFlow.shape)] = torch.cat([ tenHor, tenVer ], 1)
+        # end
+
+        tenFlow = torch.cat([ tenFlow[:, 0:1, :, :] / ((tenInput.shape[3] - 1.0) / 2.0), tenFlow[:, 1:2, :, :] / ((tenInput.shape[2] - 1.0) / 2.0) ], 1)
+
+        return torch.nn.functional.grid_sample(input=tenInput, grid=(self.backwarp_tenGrid[str(tenFlow.shape)] + tenFlow).permute(0, 2, 3, 1), mode='bilinear', padding_mode='border', align_corners=False)
 
 
 # netNetwork = None
