@@ -4,6 +4,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import math
 
+from mmedit.models.common import flow_warp
+
 
 class Network(torch.nn.Module):
     def __init__(self, pretrained):
@@ -87,8 +89,9 @@ class Network(torch.nn.Module):
             if tenUpsampled.shape[2] != tenOne[intLevel].shape[2]: tenUpsampled = torch.nn.functional.pad(input=tenUpsampled, pad=[ 0, 0, 0, 1 ], mode='replicate')
             if tenUpsampled.shape[3] != tenOne[intLevel].shape[3]: tenUpsampled = torch.nn.functional.pad(input=tenUpsampled, pad=[ 0, 1, 0, 0 ], mode='replicate')
 
-            tenFlow = self.netBasic[intLevel](torch.cat([ tenOne[intLevel], self.backwarp(tenInput=tenTwo[intLevel], tenFlow=tenUpsampled), tenUpsampled ], 1)) + tenUpsampled
-        # end
+            # tenFlow = self.netBasic[intLevel](torch.cat([ tenOne[intLevel], self.backwarp(tenInput=tenTwo[intLevel], tenFlow=tenUpsampled), tenUpsampled ], 1)) + tenUpsampled
+            tenFlow = self.netBasic[intLevel](torch.cat([ tenOne[intLevel], flow_warp(tenTwo[intLevel], tenUpsampled.permute(0,2,3,1))], 1)) + tenUpsampled
+            
 
         return tenFlow
     # end
