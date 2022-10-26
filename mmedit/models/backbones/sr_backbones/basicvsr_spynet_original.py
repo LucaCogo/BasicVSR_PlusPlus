@@ -129,7 +129,7 @@ class BasicVSRSPyNet_Original(nn.Module):
         from mmedit.models.RAFT.utils import flow_to_image
         import os
 
-        OUT_FOLDER = "raft-s_norfix4"
+        OUT_FOLDER = "spynet-original"
 
         img = img.permute(1,2,0).cpu().numpy()
         img *= 255.0
@@ -150,6 +150,17 @@ class BasicVSRSPyNet_Original(nn.Module):
         cv2.imwrite(filename, img_flo)
         print(f"Saved to {filename}")
 
+    def preprocess_for_of(tenOne, tenTwo):
+        intWidth = tenOne.shape[3]
+        intHeight = tenOne.shape[2]
+
+        intPreprocessedWidth = int(math.floor(math.ceil(intWidth / 32.0) * 32.0))
+        intPreprocessedHeight = int(math.floor(math.ceil(intHeight / 32.0) * 32.0))
+
+        tenPreprocessedOne = torch.nn.functional.interpolate(input=tenOne, size=(intPreprocessedHeight, intPreprocessedWidth), mode='bilinear', align_corners=False)
+        tenPreprocessedTwo = torch.nn.functional.interpolate(input=tenTwo, size=(intPreprocessedHeight, intPreprocessedWidth), mode='bilinear', align_corners=False)
+
+        return tenPreprocessedOne, tenPreprocessedTwo
 
     def compute_flow(self, lqs):
         """Compute optical flow using SPyNet for feature alignment.
@@ -175,7 +186,17 @@ class BasicVSRSPyNet_Original(nn.Module):
         lqs_1 = lqs[:, :-1, :, :, :].reshape(-1, c, h, w)
         lqs_2 = lqs[:, 1:, :, :, :].reshape(-1, c, h, w)
 
-        _, flows_backward = self.spynet.forward(lqs_1, lqs_2)
+        intWidth = lqs_1.shape[3]
+        intHeight = lqs_1.shape[2]
+
+        intPreprocessedWidth = int(math.floor(math.ceil(intWidth / 32.0) * 32.0))
+        intPreprocessedHeight = int(math.floor(math.ceil(intHeight / 32.0) * 32.0))
+
+        tenPreprocessedOne = torch.nn.functional.interpolate(input=lqs_1, size=(intPreprocessedHeight, intPreprocessedWidth), mode='bilinear', align_corners=False)
+        tenPreprocessedTwo = torch.nn.functional.interpolate(input=lqs_2, size=(intPreprocessedHeight, intPreprocessedWidth), mode='bilinear', align_corners=False)
+
+        flows_backward = torch.nn.functional.interpolate(input=self.spynet.forward(tenPreprocessedOne, tenPreprocessedTwo), size=(intHeight, intWidth), mode='bilinear', align_corners=False)
+        # flows_backward = self.spynet.forward(lqs_1, lqs_2)
         
         #if lqs_1.shape[0]>30:
         #  for count, image in enumerate(lqs_1):
@@ -187,7 +208,9 @@ class BasicVSRSPyNet_Original(nn.Module):
         if self.is_mirror_extended:  # flows_forward = flows_backward.flip(1)
             flows_forward = None
         else:
-            _, flows_forward = self.spynet.forward(lqs_2, lqs_1)
+            flows_forward = torch.nn.functional.interpolate(input=self.spynet.forward(tenPreprocessedTwo, tenPreprocessedOne), size=(intHeight, intWidth), mode='bilinear', align_corners=False)
+
+            # flows_forward = self.spynet.forward(lqs_2, lqs_1)
             flows_forward = flows_forward.view(n, t - 1, 2, h, w)
 
         if self.cpu_cache:

@@ -2,6 +2,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import math
 
 
 class Network(torch.nn.Module):
@@ -54,14 +55,14 @@ class Network(torch.nn.Module):
         # if MODEL == 'mmediting':
         #     model_dict = {format_model_dict_key(strKey): tenWeight for strKey, tenWeight in torch.hub.load_state_dict_from_url(url='https://download.openmmlab.com/mmediting/restorers/basicvsr/spynet_20210409-c6c1bd09.pth', file_name='spynet-' + MODEL).items()}
         #     self.load_state_dict(model_dict)
-            
+        
         # else:
-        self.load_state_dict({ strKey.replace('module', 'net'): tenWeight for strKey, tenWeight in torch.load(pretrained, map_location=torch.device(DEVICE)).items()})
+        self.load_state_dict({ strKey.replace('module', 'net'): tenWeight for strKey, tenWeight in torch.load(pretrained, map_location=torch.device('cuda')).items()})
             # print({strKey.replace('basic_net', 'netBasic'): tenWeight for strKey, tenWeight in torch.load.hub.load_state_dict_from_url("models/network-" + MODEL + ".pytorch", map_location=torch.device(DEVICE)).items()})
 
             # self.load_state_dict({strKey.replace('basic_net', 'netBasic'): tenWeight for strKey, tenWeight in torch.load.hub.load_state_dict_from_url("models/network-" + MODEL + ".pytorch", map_location=torch.device(DEVICE)).items()})
 
-
+        self.backwarp_tenGrid = {}
     # end
 
     def forward(self, tenOne, tenTwo):
@@ -93,17 +94,20 @@ class Network(torch.nn.Module):
     # end
 
     
-    def backwarp(tenInput, tenFlow):
+    def backwarp(self, tenInput, tenFlow):
+
+        tenInput.cuda()
+        tenFlow.cuda()
         if str(tenFlow.shape) not in self.backwarp_tenGrid:
             tenHor = torch.linspace(-1.0 + (1.0 / tenFlow.shape[3]), 1.0 - (1.0 / tenFlow.shape[3]), tenFlow.shape[3]).view(1, 1, 1, -1).repeat(1, 1, tenFlow.shape[2], 1)
             tenVer = torch.linspace(-1.0 + (1.0 / tenFlow.shape[2]), 1.0 - (1.0 / tenFlow.shape[2]), tenFlow.shape[2]).view(1, 1, -1, 1).repeat(1, 1, 1, tenFlow.shape[3])
-
+            
             self.backwarp_tenGrid[str(tenFlow.shape)] = torch.cat([ tenHor, tenVer ], 1)
         # end
 
         tenFlow = torch.cat([ tenFlow[:, 0:1, :, :] / ((tenInput.shape[3] - 1.0) / 2.0), tenFlow[:, 1:2, :, :] / ((tenInput.shape[2] - 1.0) / 2.0) ], 1)
 
-        return torch.nn.functional.grid_sample(input=tenInput, grid=(self.backwarp_tenGrid[str(tenFlow.shape)] + tenFlow).permute(0, 2, 3, 1), mode='bilinear', padding_mode='border', align_corners=False)
+        return torch.nn.functional.grid_sample(input=tenInput, grid=(self.backwarp_tenGrid[str(tenFlow.shape)].cuda() + tenFlow).permute(0, 2, 3, 1), mode='bilinear', padding_mode='border', align_corners=False)
 
 
 # netNetwork = None
