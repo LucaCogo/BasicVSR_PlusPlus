@@ -71,6 +71,8 @@ class Network(torch.nn.Module):
         tenFlow = []
         self.backwarp_tenGrid = {}
 
+        n, _, h, w = tenOne.size()
+
         tenOne = [ self.netPreprocess(tenOne) ]
         tenTwo = [ self.netPreprocess(tenTwo) ]
 
@@ -81,15 +83,16 @@ class Network(torch.nn.Module):
             
         
 
-        tenFlow = tenOne[0].new_zeros([ tenOne[0].shape[0], 2, int(math.floor(tenOne[0].shape[2] / 2.0)), int(math.floor(tenOne[0].shape[3] / 2.0)) ])
+        # tenFlow = tenOne[0].new_zeros([ tenOne[0].shape[0], 2, int(math.floor(tenOne[0].shape[2] / 2.0)), int(math.floor(tenOne[0].shape[3] / 2.0)) ])
+        tenFlow = tenOne[0].new_zeros([ n, 2, h // 32, w // 32 ])
+
 
         for intLevel in range(len(tenOne)):
             tenUpsampled = torch.nn.functional.interpolate(input=tenFlow, scale_factor=2, mode='bilinear', align_corners=True) * 2.0
 
-            if tenUpsampled.shape[2] != tenOne[intLevel].shape[2]: tenUpsampled = torch.nn.functional.pad(input=tenUpsampled, pad=[ 0, 0, 0, 1 ], mode='replicate')
-            if tenUpsampled.shape[3] != tenOne[intLevel].shape[3]: tenUpsampled = torch.nn.functional.pad(input=tenUpsampled, pad=[ 0, 1, 0, 0 ], mode='replicate')
+            # if tenUpsampled.shape[2] != tenOne[intLevel].shape[2]: tenUpsampled = torch.nn.functional.pad(input=tenUpsampled, pad=[ 0, 0, 0, 1 ], mode='replicate')
+            # if tenUpsampled.shape[3] != tenOne[intLevel].shape[3]: tenUpsampled = torch.nn.functional.pad(input=tenUpsampled, pad=[ 0, 1, 0, 0 ], mode='replicate')
 
-            # tenFlow = self.netBasic[intLevel](torch.cat([ tenOne[intLevel], self.backwarp(tenInput=tenTwo[intLevel], tenFlow=tenUpsampled), tenUpsampled ], 1)) + tenUpsampled
             tenFlow = self.netBasic[intLevel](torch.cat([ tenOne[intLevel], flow_warp(tenTwo[intLevel], tenUpsampled.permute(0,2,3,1), padding_mode='border'), tenUpsampled], 1)) + tenUpsampled
             
 
