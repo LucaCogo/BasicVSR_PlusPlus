@@ -73,11 +73,11 @@ class Network(torch.nn.Module):
         tenTwo = [ self.netPreprocess(tenTwo) ]
 
         for intLevel in range(5):
-            if tenOne[0].shape[2] > 32 or tenOne[0].shape[3] > 32:
-                tenOne.insert(0, torch.nn.functional.avg_pool2d(input=tenOne[0], kernel_size=2, stride=2, count_include_pad=False))
-                tenTwo.insert(0, torch.nn.functional.avg_pool2d(input=tenTwo[0], kernel_size=2, stride=2, count_include_pad=False))
-            # end
-        # end
+        # if tenOne[0].shape[2] > 32 or tenOne[0].shape[3] > 32:
+            tenOne.insert(0, torch.nn.functional.avg_pool2d(input=tenOne[0], kernel_size=2, stride=2, count_include_pad=False))
+            tenTwo.insert(0, torch.nn.functional.avg_pool2d(input=tenTwo[0], kernel_size=2, stride=2, count_include_pad=False))
+            
+        
 
         tenFlow = tenOne[0].new_zeros([ tenOne[0].shape[0], 2, int(math.floor(tenOne[0].shape[2] / 2.0)), int(math.floor(tenOne[0].shape[3] / 2.0)) ])
 

@@ -196,6 +196,12 @@ class BasicVSRSPyNet_Original(nn.Module):
         tenPreprocessedTwo = torch.nn.functional.interpolate(input=lqs_2, size=(intPreprocessedHeight, intPreprocessedWidth), mode='bilinear', align_corners=False)
 
         flows_backward = torch.nn.functional.interpolate(input=self.spynet.forward(tenPreprocessedOne, tenPreprocessedTwo), size=(intHeight, intWidth), mode='bilinear', align_corners=False)
+        
+        flows_backward[:, 0, :, :] *= float(intWidth) / float(intPreprocessedWidth)
+        flows_backward[:, 1, :, :] *= float(intHeight) / float(intPreprocessedHeight)
+
+
+
         # flows_backward = self.spynet.forward(lqs_1, lqs_2)
         
         #if lqs_1.shape[0]>30:
@@ -209,6 +215,9 @@ class BasicVSRSPyNet_Original(nn.Module):
             flows_forward = None
         else:
             flows_forward = torch.nn.functional.interpolate(input=self.spynet.forward(tenPreprocessedTwo, tenPreprocessedOne), size=(intHeight, intWidth), mode='bilinear', align_corners=False)
+            flows_forward[:, 0, :, :] *= float(intWidth) / float(intPreprocessedWidth)
+            flows_forward[:, 1, :, :] *= float(intHeight) / float(intPreprocessedHeight)
+
 
             # flows_forward = self.spynet.forward(lqs_2, lqs_1)
             flows_forward = flows_forward.view(n, t - 1, 2, h, w)
