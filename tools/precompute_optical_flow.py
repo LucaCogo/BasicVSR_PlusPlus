@@ -2,6 +2,8 @@
 
 import sys
 import os
+
+#sys.path.append(os.getcwd)
 import torch
 import argparse
 import glob
@@ -33,13 +35,19 @@ def compute_flows(args):
 
     imagespath = os.path.join(args.path, input_folder)
     targetpath = os.path.join(args.path, output_folder)
-
+    
     if not os.path.exists(targetpath):
-      os.mkdir(targetpath)
+          os.mkdir(os.path.join(targetpath))
 
     with torch.no_grad():
       for d in os.listdir(imagespath):
+
+        of_sequence_path = os.path.join(targetpath, d)
         sequencepath = os.path.join(imagespath, d)
+        if not os.path.exists(of_sequence_path):
+          os.mkdir(os.path.join(of_sequence_path))
+
+
         print(f"Computing optical flow for sequence: {d}")
 
         image_filenames = glob.glob(os.path.join(sequencepath, '*.png')) + \
@@ -60,14 +68,21 @@ def compute_flows(args):
         frames_batch1 = frames[:-1]
         frames_batch2 = frames[1:]
 
-        _, flow_out = model(frames_batch1, frames_batch2, iters=32, test_mode = True)
+        _, flows_backward = model(frames_batch1, frames_batch2, iters=32, test_mode = True)
+        _, flows_forward = model(frames_batch2, frames_batch1, iters=32, test_mode = True)
 
+        flows_backward = torch.stack([padder.unpad(x) for x in flows_backward])
+        flows_forward = torch.stack([padder.unpad(x) for x in flows_forward])
+      
 
-        filename = os.path.join(targetpath,d) + ".flo"
-        fileObj = open(filename, 'wb')
-        flow_out.cpu().numpy().tofile(fileObj)
+        filename = os.path.join(of_sequence_path, "backward")
+        with open(filename, 'wb') as f:
+          np.save(f, flows_backward.cpu().numpy())
 
-        fileObj.close()
+        filename = os.path.join(of_sequence_path, "forward")
+        with open(filename, 'wb') as f:
+          np.save(f, flows_forward.cpu().numpy())
+
 
 
 
@@ -83,3 +98,4 @@ if __name__ == '__main__':
 	
 	args = parser.parse_args()
 	compute_flows(args)
+	
