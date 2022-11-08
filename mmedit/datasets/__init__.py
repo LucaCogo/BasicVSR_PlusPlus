@@ -7,7 +7,7 @@ from .registry import DATASETS, PIPELINES
 from .sr_folder_multiple_gt_dataset import SRFolderMultipleGTDataset
 from .sr_reds_multiple_gt_dataset import SRREDSMultipleGTDataset
 from .sr_vimeo90k_multiple_gt_dataset import SRVimeo90KMultipleGTDataset
-from .sr_folder_precomputed_flow import SRFolderPrecomputedFlowDataset
+from .sr_folder_precomputed_flow_dataset import SRFolderPrecomputedFlowDataset
 
 
 __all__ = [

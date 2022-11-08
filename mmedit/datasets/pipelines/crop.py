@@ -416,7 +416,6 @@ class QuadrupleRandomCrop:
   Required keys are "scale" and the images
   """
 
-
     def __init__(self, gt_patch_size):
         self.gt_pathc_size = gt_patch_size
 

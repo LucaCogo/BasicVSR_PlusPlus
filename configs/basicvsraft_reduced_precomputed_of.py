@@ -38,15 +38,15 @@ train_pipeline = [
         key='gt',
         channel_order='rgb'),
     dict(
-        type='LoadNPYFromFoleList',
+        type='LoadNPYFromFileList',
         io_backend='disk',
         key='of_b' # backward optical flow
-    )
+    ),
     dict(
-        type='LoadNPYFromFoleList',
+        type='LoadNPYFromFileList',
         io_backend='disk',
         key='of_f' # forward optical flow
-    )
+    ),
     dict(type='RescaleToZeroOne', keys=['lq', 'gt']),
     dict(type='QuadrupleRandomCrop', gt_patch_size=256),
     dict(
@@ -71,15 +71,15 @@ test_pipeline = [
         key='gt',
         channel_order='rgb'),
     dict(
-        type='LoadNPYFromFoleList',
+        type='LoadNPYFromFileList',
         io_backend='disk',
         key='of_b' # backward optical flow
-    )
+    ),
     dict(
-        type='LoadNPYFromFoleList',
+        type='LoadNPYFromFileList',
         io_backend='disk',
         key='of_f' # forward optical flow
-    )
+    ),
     dict(type='RescaleToZeroOne', keys=['lq', 'gt']),
     dict(type='FramesToTensor', keys=['lq', 'gt']),
     dict(
@@ -115,7 +115,7 @@ data = dict(
             lq_folder='../REDS_ridotto/lq_sequences_train',
             gt_folder='../REDS_ridotto/gt_sequences_train',
             of_b_folder='../REDS_ridotto/lq_sequences_train_of/' + model_name + "/backward",
-            of_f_folder='../REDS_ridotto/lq_sequences_train_of/' + model_name + "/forward"
+            of_f_folder='../REDS_ridotto/lq_sequences_train_of/' + model_name + "/forward",
             num_input_frames=30,
             pipeline=train_pipeline,
             scale=4,
@@ -126,7 +126,7 @@ data = dict(
         lq_folder='../REDS_ridotto/lq_sequences_val',
         gt_folder='../REDS_ridotto/gt_sequences_val',
         of_b_folder='../REDS_ridotto/lq_sequences_train_of/' + model_name + "/backward",
-        of_f_folder='../REDS_ridotto/lq_sequences_train_of/' + model_name + "/forward"
+        of_f_folder='../REDS_ridotto/lq_sequences_train_of/' + model_name + "/forward",
         num_input_frames=100,
         pipeline=test_pipeline,
         scale=4,
