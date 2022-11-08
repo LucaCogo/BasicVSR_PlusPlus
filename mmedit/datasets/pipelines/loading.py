@@ -192,6 +192,76 @@ class LoadImageFromFileList(LoadImageFromFile):
 
         return results
 
+@PIPELINES.register_module()
+class LoadNPYFromFile:
+  """Load NPY from file.
+    Args:
+    io_backend (str): io backend where images are stored. Default: 'disk'.
+  """
+
+  def __init__(self,
+               io_backend='disk',
+               key = "of_b",
+               **kwargs):
+    self.io_backend = io_backend
+    self.key = key
+    self.file_client = None
+    self.cache = None
+
+
+  def __call__(self, results):
+    """Call function.
+
+    Args: 
+      results (dict): A dict containing the necessary information and data for augmentation
+
+    Returns:
+      dict: A dict containing the processed data and information
+    """
+    filepath = str(results[f'{self.key}_path'])
+    with open(filepath, 'rb') as f:
+      npy = np.load(f)
+    
+    results[self.key] = npy
+    results[f'{self.key}_path'] = filepath
+    results[f'{self.key}_ori_shape'] = npy.shape
+
+    return results
+    
+
+@PIPELINES.register_module()
+class LoadNPYFromFileList(LoadNPYFromFile):
+  """Load NPY from file list.
+
+  It accepts a listof path and read each frame for each path. A list of frames will be returned.
+
+  Args:
+    io_backend (str): io backend where images are store. Default: 'disk'.
+    key (str): Keys in results to find corresponding path. Default: 'gt'.  
+  """
+
+  def __call__(self, results):
+    filepaths = results[f'{self.key}_path']
+    if not isinstance(filepaths, list):
+      raise TypeError(
+        f'filepath should be list, but got {type(filepaths)}')
+
+    filepaths = [str(v) for v in filepaths]
+
+    npys = []
+    shapes = []
+
+    for filepath in filepaths:
+      with open(filepath, 'rb') as f:
+        npy = np.load(f)
+
+      npys.append(npy)
+      shapes.append(npy.shape)
+    
+    results[self.key] = npys
+    results[f'{self.key}_path'] = filepaths
+    results[f'{self.key}_ori_shape'] = shapes
+
 
 @PIPELINES.register_module()
 class RandomLoadResizeBg:
