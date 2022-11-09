@@ -227,6 +227,9 @@ class LoadNPYFromFile:
     results[f'{self.key}_ori_shape'] = npy.shape
 
     return results
+
+    def __repr__(self):
+        return self.__class__.__name__ + f'(io_backend={self.io_backend}, key={self.key}, '
     
 
 @PIPELINES.register_module()

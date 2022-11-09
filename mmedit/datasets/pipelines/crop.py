@@ -410,25 +410,25 @@ class PairedRandomCrop:
 class QuadrupleRandomCrop:
   """Multiple Random Crop
 
-  It crops a quadruple of lq, gt, of_b (backward optical flow) 
-  and of_f (forward optical flow) with corresponding locations
-  It also supports accepting images lists.
-  Required keys are "scale" and the images
-  """
+      It crops a quadruple of lq, gt, of_b (backward optical flow) 
+      and of_f (forward optical flow) with corresponding locations
+      It also supports accepting images lists.
+      Required keys are "scale" and the images
+      """
 
     def __init__(self, gt_patch_size):
         self.gt_pathc_size = gt_patch_size
 
     def __call__(self, results):    
-        """Call function
+    """Call function
 
-        Args:
-            results (dict): A dict containing the necessary information and 
-            data for augmentation
+    Args:
+      results (dict): A dict containing the necessary information and 
+      data for augmentation
 
-        Returns:
-            dict: A dict containing the processed data and information.
-        """
+    Returns:
+      dict: A dict containing the processed data and information.
+    """
         scale = results['scale']
         lq_patch_size = self.gt_patch_size // scale
 
@@ -477,7 +477,7 @@ class QuadrupleRandomCrop:
         top_gt, left_gt = int(top * scale), int(left * scale)
         results['gt'] = [
             v[top_gt:top_gt + self.gt_patch_size,
-              left_gt:left_gt + self.gt_patch_size, ...] for v in results['gt']
+            left_gt:left_gt + self.gt_patch_size, ...] for v in results['gt']
         ]
 
         if not isinstance(results['lq'], list):
@@ -488,8 +488,13 @@ class QuadrupleRandomCrop:
             results['of_b'] = results['of_b'][0]
         if not isinstance(results['of_b'], list):
             results['of_f'] = results['of_f'][0]
-            
+          
         return results
+
+def __repr__(self):
+    repr_str = self.__class__.__name__
+    repr_str += f'(gt_patch_size={self.gt_patch_size})'
+    return repr_str
 
 @PIPELINES.register_module()
 class CropAroundCenter:
