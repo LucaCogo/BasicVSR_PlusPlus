@@ -193,7 +193,8 @@ class BasicVSR(BasicRestorer):
                      meta=None,
                      save_image=False,
                      save_path=None,
-                     iteration=None):
+                     iteration=None,
+                     **kwargs):
         """Testing forward function.
 
         Args:
@@ -207,11 +208,21 @@ class BasicVSR(BasicRestorer):
         Returns:
             dict: Output results.
         """
+
         with torch.no_grad():
-            if self.forward_ensemble is not None:
-                output = self.forward_ensemble(lq, self.generator)
+            if 'of_b' in [k for k in kwargs.keys()] and 'of_f' in [k for k in kwargs.keys()]:
+                if self.forward_ensemble is not None:
+                  raise NotImplementedError(
+                    'Currently the RAFT precomp optical flow does not' 
+                    'support SpatialTemporalEnsemble'
+                  )
+                else:
+                  output = self.generator(lq, **kwargs)
             else:
-                output = self.generator(lq)
+                if self.forward_ensemble is not None:
+                  output = self.forward_ensemble(lq, self.generator)
+                else:
+                  output = self.generator(lq)
 
         # If the GT is an image (i.e. the center frame), the output sequence is
         # turned to an image.
