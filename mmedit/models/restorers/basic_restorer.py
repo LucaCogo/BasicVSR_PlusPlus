@@ -70,14 +70,13 @@ class BasicRestorer(BaseModel):
             test_mode (bool): Whether in test mode or not. Default: False.
             kwargs (dict): Other arguments.
         """
-
         if test_mode:
             # print(f"Test --> lq: {lq.shape} | gt: {gt.shape}")
             return self.forward_test(lq, gt, **kwargs)
 
-        return self.forward_train(lq, gt)
+        return self.forward_train(lq, gt, **kwargs)
 
-    def forward_train(self, lq, gt):
+    def forward_train(self, lq, gt, **kwargs):
         """Training forward function.
 
         Args:
@@ -90,7 +89,12 @@ class BasicRestorer(BaseModel):
 
         # print(f"Train --> lq: {lq.shape} | gt: {gt.shape}")
         losses = dict()
-        output = self.generator(lq)
+
+        if 'of_b' in [k for k in kwargs.keys()] and 'of_f' in [k for k in kwargs.keys()]:
+            output = self.generator(lq, kwargs['of_b'], kwargs['of_f'])
+        else:
+            output = self.generator(lq)
+
         loss_pix = self.pixel_loss(output, gt)
         losses['loss_pix'] = loss_pix
         outputs = dict(
@@ -126,7 +130,8 @@ class BasicRestorer(BaseModel):
                      meta=None,
                      save_image=False,
                      save_path=None,
-                     iteration=None):
+                     iteration=None,
+                     **kwargs):
         """Testing forward function.
 
         Args:
@@ -141,9 +146,11 @@ class BasicRestorer(BaseModel):
             dict: Output results.
         """
 
+        if 'of_b' in [k for k in kwargs.keys()] and 'of_f' in [k for k in kwargs.keys()]:
+            output = self.generator(lq, kwargs['of_b'], kwargs['of_f'])
+        else:
+            output = self.generator(lq)
 
-
-        output = self.generator(lq)
         if self.test_cfg is not None and self.test_cfg.get('metrics', None):
             assert gt is not None, (
                 'evaluation with metrics must have gt images.')

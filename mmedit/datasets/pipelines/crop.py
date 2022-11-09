@@ -417,7 +417,7 @@ class QuadrupleRandomCrop:
       """
 
     def __init__(self, gt_patch_size):
-        self.gt_pathc_size = gt_patch_size
+        self.gt_patch_size = gt_patch_size
 
     def __call__(self, results):    
     """Call function

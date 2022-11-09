@@ -265,6 +265,7 @@ class LoadNPYFromFileList(LoadNPYFromFile):
     results[f'{self.key}_path'] = filepaths
     results[f'{self.key}_ori_shape'] = shapes
 
+    return results
 
 @PIPELINES.register_module()
 class RandomLoadResizeBg:

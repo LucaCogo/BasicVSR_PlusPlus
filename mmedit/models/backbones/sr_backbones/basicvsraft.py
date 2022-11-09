@@ -343,7 +343,7 @@ class BasicVSRAFT(nn.Module):
 
         return torch.stack(outputs, dim=1)
 
-    def forward(self, lqs):
+    def forward(self, lqs, **kwargs):
         """Forward function for BasicVSR++.
 
         Args:

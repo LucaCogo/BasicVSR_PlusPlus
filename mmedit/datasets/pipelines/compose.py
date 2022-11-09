@@ -42,6 +42,8 @@ class Compose:
             data = t(data)
             if data is None:
                 return None
+
+        print(data.keys())
         return data
 
     def __repr__(self):
