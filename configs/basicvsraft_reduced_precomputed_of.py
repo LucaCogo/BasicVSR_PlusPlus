@@ -7,7 +7,8 @@ model = dict(
         type='BasicVSRAFT_precomp',
         mid_channels=64,
         num_blocks=7,
-        is_low_res_input=True),
+        is_low_res_input=True,
+        small = True),
     pixel_loss=dict(type='CharbonnierLoss', loss_weight=1.0, reduction='mean')
     )
 

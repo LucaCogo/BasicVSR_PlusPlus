@@ -325,8 +325,11 @@ class BasicVSRAFT_precomp(nn.Module):
             'The height and width of low-res inputs must be at least 64, '
             f'but got {h} and {w}.')
 
-        flows_forward = torch.stack(kwargs['of_f'][1:])
-        flows_backward = torch.stack(kwargs['of_b'][1:])
+        flows_forward = torch.cat(kwargs['of_f'][1:]).permute(0,3,1,2)
+        flows_backward = torch.cat(kwargs['of_b'][1:]).permute(0,3,1,2)
+
+        flows_forward = torch.unsqueeze(flows_forward, 0)
+        flows_backward = torch.unsqueeze(flows_backward, 0)
 
         # feature propgation
         for iter_ in [1, 2]:
