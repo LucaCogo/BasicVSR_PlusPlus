@@ -14,7 +14,7 @@ model = dict(
     pixel_loss=dict(type='CharbonnierLoss', loss_weight=1.0, reduction='mean')
     )
 
-model_name = "rafts" if model.small else "raft"
+model_name = "rafts" if model['generator']["small"] else "raft"
 
 # model training and testing settings
 train_cfg = dict(fix_iter=5000)
@@ -26,7 +26,7 @@ val_dataset_type = 'SRFolderPrecomputedFlowDataset'
 test_dataset_type = 'SRFolderPrecomputedFlowDataset'
 
 train_pipeline = [
-    dict(type='GenerateSegmentIndices', interval_list=[1]),
+    dict(type='GenerateSegmentIndicesPrecomp', interval_list=[1]),
     dict(
         type='LoadImageFromFileList',
         io_backend='disk',
@@ -59,7 +59,7 @@ train_pipeline = [
 ]
 
 test_pipeline = [
-    dict(type='GenerateSegmentIndices', interval_list=[1]),
+    dict(type='GenerateSegmentIndicesPrecomp', interval_list=[1]),
     dict(
         type='LoadImageFromFileList',
         io_backend='disk',
@@ -89,7 +89,7 @@ test_pipeline = [
 ]
 
 demo_pipeline = [
-    dict(type='GenerateSegmentIndices', interval_list=[1]),
+    dict(type='GenerateSegmentIndicesPrecomp', interval_list=[1]),
     dict(
         type='LoadImageFromFileList',
         io_backend='disk',
