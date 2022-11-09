@@ -4,13 +4,10 @@ exp_name = 'basicvsraft_s_reduced_precomp_flow_bs_1_1k_iters'
 model = dict(
     type='BasicVSR',
     generator=dict(
-        type='BasicVSRAFT',
+        type='BasicVSRAFT_precomp',
         mid_channels=64,
         num_blocks=7,
-        is_low_res_input=True,
-        small=True,
-        iters = 32,
-        spynet_pretrained='./mmedit/pretrained-models/RAFT/raft-small.pth'),
+        is_low_res_input=True),
     pixel_loss=dict(type='CharbonnierLoss', loss_weight=1.0, reduction='mean')
     )
 

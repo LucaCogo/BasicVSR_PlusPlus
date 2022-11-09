@@ -405,30 +405,28 @@ class PairedRandomCrop:
         repr_str += f'(gt_patch_size={self.gt_patch_size})'
         return repr_str
 
-
 @PIPELINES.register_module()
 class QuadrupleRandomCrop:
-  """Multiple Random Crop
+    """Multiple Random Crop
 
-      It crops a quadruple of lq, gt, of_b (backward optical flow) 
-      and of_f (forward optical flow) with corresponding locations
-      It also supports accepting images lists.
-      Required keys are "scale" and the images
-      """
-
+        It crops a quadruple of lq, gt, of_b (backward optical flow) 
+        and of_f (forward optical flow) woth corresponding locations
+        It also supports accepting image lists.
+        Required keys are "scale" and the quadruple
+    """
     def __init__(self, gt_patch_size):
         self.gt_patch_size = gt_patch_size
 
-    def __call__(self, results):    
-    """Call function
+    def __call__(sefl, results):
+        """Call function
 
-    Args:
-      results (dict): A dict containing the necessary information and 
-      data for augmentation
+        Args:
+            results (dict): Adcit containing the necessary information and
+            data for augmentation
 
-    Returns:
-      dict: A dict containing the processed data and information.
-    """
+        Returns:
+            dict: A dict containing the processed data and information.
+        """
         scale = results['scale']
         lq_patch_size = self.gt_patch_size // scale
 
@@ -438,7 +436,7 @@ class QuadrupleRandomCrop:
             results['gt'] = [results['gt']]
         if not isinstance(results['of_b'], list):
             results['of_b'] = [results['of_b']]
-        if not isinstance(results['of_b'], list):
+        if not isinstance(results['of_f'], list):
             results['of_f'] = [results['of_f']]
 
         h_lq, w_lq, _ = results['lq'][0].shape
@@ -446,12 +444,12 @@ class QuadrupleRandomCrop:
 
         if h_gt != h_lq * scale or w_gt != w_lq * scale:
             raise ValueError(
-                f'Scale mismatches. GT ({h_gt}, {w_gt}) is not {scale}x ',
-                f'multiplication of LQ ({h_lq}, {w_lq}).')
+                f"Scale mismatches. GT ({h_gt}, {w_gt}) is not {scale}x",
+                f"multiplication of LQ ({h_lq}, {w_lq}).")
         if h_lq < lq_patch_size or w_lq < lq_patch_size:
             raise ValueError(
-                f'LQ ({h_lq}, {w_lq}) is smaller than patch size ',
-                f'({lq_patch_size}, {lq_patch_size}). Please check '
+                f'LQ ({h_lq},{w_lq}) is smaller than patch size',
+                f'({lq_patch_size},{lq_patch_size}). Please check '
                 f'{results["lq_path"][0]} and {results["gt_path"][0]}.')
 
         # randomly choose top and left coordinates for lq patch
@@ -459,25 +457,28 @@ class QuadrupleRandomCrop:
         left = np.random.randint(w_lq - lq_patch_size + 1)
         # crop lq patch
         results['lq'] = [
-            v[top:top + lq_patch_size, left:left + lq_patch_size, ...]
+            v[top:top+ lq_patch_size, left:left + lq_patch_size, ...]
             for v in results['lq']
         ]
-        #crop corresponding of_b patch
+
+        # crop corresponding of_b patch
         results['of_b'] = [
-            v[top:top+ lq_patch_size, left:left + lq_patch_size , ...]
+            v[top:top+ lq_patch_size, left:left + lq_patch_size, ...]
             for v in results['of_b']
         ]
-        #crop corresponding of_f patch
+
+        # crop corresponding of_f patch
         results['of_f'] = [
-            v[top:top+ lq_patch_size, left:left + lq_patch_size , ...]
+            v[top:top+ lq_patch_size, left:left + lq_patch_size, ...]
             for v in results['of_f']
         ]
 
         # crop corresponding gt patch
         top_gt, left_gt = int(top * scale), int(left * scale)
         results['gt'] = [
-            v[top_gt:top_gt + self.gt_patch_size,
-            left_gt:left_gt + self.gt_patch_size, ...] for v in results['gt']
+            v[top_gt:top_gt+ self.gt_patch_size, 
+            left_gt:left_gt + self.gt_patch_size, ...]
+            for v in results['gt']
         ]
 
         if not isinstance(results['lq'], list):
@@ -486,15 +487,15 @@ class QuadrupleRandomCrop:
             results['gt'] = results['gt'][0]
         if not isinstance(results['of_b'], list):
             results['of_b'] = results['of_b'][0]
-        if not isinstance(results['of_b'], list):
+        if not isinstance(results['of_f'], list):
             results['of_f'] = results['of_f'][0]
-          
+
         return results
 
-def __repr__(self):
-    repr_str = self.__class__.__name__
-    repr_str += f'(gt_patch_size={self.gt_patch_size})'
-    return repr_str
+    def __repr__(self):
+        repr_str = self.__class__.__name__
+        repr_str += f'(gt_patch_size={self.gt_patch_size})'
+        return repr_str
 
 @PIPELINES.register_module()
 class CropAroundCenter:

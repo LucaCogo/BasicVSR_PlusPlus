@@ -51,6 +51,7 @@ class BaseSRDataset(BaseDataset):
         results = copy.deepcopy(self.data_infos[idx])
         results['scale'] = self.scale
         tmp =  self.pipeline(results)
+
         return tmp
 
     def evaluate(self, results, logger=None):

@@ -91,7 +91,7 @@ class BasicRestorer(BaseModel):
         losses = dict()
 
         if 'of_b' in [k for k in kwargs.keys()] and 'of_f' in [k for k in kwargs.keys()]:
-            output = self.generator(lq, kwargs['of_b'], kwargs['of_f'])
+            output = self.generator(lq, **kwargs)
         else:
             output = self.generator(lq)
 
@@ -147,7 +147,7 @@ class BasicRestorer(BaseModel):
         """
 
         if 'of_b' in [k for k in kwargs.keys()] and 'of_f' in [k for k in kwargs.keys()]:
-            output = self.generator(lq, kwargs['of_b'], kwargs['of_f'])
+            output = self.generator(lq, **kwargs)
         else:
             output = self.generator(lq)
 
