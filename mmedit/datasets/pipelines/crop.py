@@ -407,11 +407,11 @@ class PairedRandomCrop:
 
 @PIPELINES.register_module()
 class QuadrupleRandomCrop:
-    """Multiple Random Crop
+    """Quadruple Random Crop
 
         It crops a quadruple of lq, gt, of_b (backward optical flow) 
-        and of_f (forward optical flow) woth corresponding locations
-        It also supports accepting image lists.
+        and of_f (forward optical flow) with corresponding locations
+        It also supports image lists.
         Required keys are "scale" and the quadruple
     """
     def __init__(self, gt_patch_size):
@@ -440,7 +440,7 @@ class QuadrupleRandomCrop:
             results['of_f'] = [results['of_f']]
 
         h_lq, w_lq, _ = results['lq'][0].shape
-        h_gt, w_gt, _ = results['gt'][0].shape
+        h_gt, w_gt, _ = results['gt'][0].shape 
 
         if h_gt != h_lq * scale or w_gt != w_lq * scale:
             raise ValueError(
