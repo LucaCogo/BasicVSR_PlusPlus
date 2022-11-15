@@ -248,14 +248,20 @@ class Flip:
             dict: A dict containing the processed data and information.
         """
         flip = np.random.random() < self.flip_ratio
+        direct = {"horizontal":0
+                "vertical":1}
 
         if flip:
             for key in self.keys:
                 if isinstance(results[key], list):
                     for v in results[key]:
                         mmcv.imflip_(v, self.direction)
+                        if key == "of_f" or key == "of_b":
+                            v[direct[self.direction]] *= -1
                 else:
                     mmcv.imflip_(results[key], self.direction)
+                    if key == "of_f" or key == "of_b":
+                            results[key][direct[self.direction]] *= -1
 
         results['flip'] = flip
         results['flip_direction'] = self.direction
@@ -792,6 +798,10 @@ class RandomTransposeHW:
                     results[key] = [v.transpose(1, 0, 2) for v in results[key]]
                 else:
                     results[key] = results[key].transpose(1, 0, 2)
+
+                if key == "of_f" or key == "of_b":
+                    results[key] = np.flip(results[key], 0) * -1 
+
 
         results['transpose'] = transpose
 

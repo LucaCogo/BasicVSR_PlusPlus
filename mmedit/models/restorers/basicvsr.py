@@ -213,7 +213,7 @@ class BasicVSR(BasicRestorer):
             if 'of_b' in [k for k in kwargs.keys()] and 'of_f' in [k for k in kwargs.keys()]:
                 if self.forward_ensemble is not None:
                   raise NotImplementedError(
-                    'Currently the RAFT precomp optical flow does not' 
+                    'Currently the RAFT precomp optical flow does not' s
                     'support SpatialTemporalEnsemble'
                   )
                 else:

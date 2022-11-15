@@ -76,7 +76,7 @@ class BasicRestorer(BaseModel):
 
         return self.forward_train(lq, gt, **kwargs)
 
-    def forward_train(self, lq, gt, **kwargs):
+    def forward_train(self, lq,gt, **kwargs):
         """Training forward function.
 
         Args:
@@ -86,7 +86,7 @@ class BasicRestorer(BaseModel):
         Returns:
             Tensor: Output tensor.
         """
-
+        
         # print(f"Train --> lq: {lq.shape} | gt: {gt.shape}")
         losses = dict()
 
@@ -124,14 +124,14 @@ class BasicRestorer(BaseModel):
                                                                crop_border)
         return eval_result
 
-    def forward_test(self,
-                     lq,
-                     gt=None,
+    def forward_test(self, 
+                     lq, 
+                     gt,
                      meta=None,
                      save_image=False,
                      save_path=None,
                      iteration=None,
-                     **kwargs):
+                     *kwargs):
         """Testing forward function.
 
         Args:

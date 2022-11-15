@@ -48,10 +48,10 @@ train_pipeline = [
     dict(type='RescaleToZeroOne', keys=['lq', 'gt']),
     dict(type='QuadrupleRandomCrop', gt_patch_size=256),
     dict(
-        type='Flip', keys=['lq', 'gt'], flip_ratio=0.5,
+        type='Flip', keys=['lq', 'gt', 'of_b','of_f'], flip_ratio=0.5,
         direction='horizontal'),
-    dict(type='Flip', keys=['lq', 'gt'], flip_ratio=0.5, direction='vertical'),
-    dict(type='RandomTransposeHW', keys=['lq', 'gt'], transpose_ratio=0.5),
+    dict(type='Flip', keys=['lq', 'gt', 'of_b', 'of_f'], flip_ratio=0.5, direction='vertical'),
+    dict(type='RandomTransposeHW', keys=['lq', 'gt', 'of_b', 'of_f'], transpose_ratio=0.5),
     dict(type='FramesToTensor', keys=['lq', 'gt']),
     dict(type='Collect', keys=['lq', 'gt', 'of_b', 'of_f'], meta_keys=['lq_path', 'gt_path', 'of_b_path', 'of_f_path'])
 ]
