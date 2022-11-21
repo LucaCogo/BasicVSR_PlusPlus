@@ -163,7 +163,7 @@ class BasicVSR_Farneback(nn.Module):
         return torch.from_numpy(flows).cuda()
 
     def compute_flow(self, lqs):
-        """Compute optical flow using SPyNet for feature alignment.
+        """Compute optical flow using Gunnar Farneback method for feature alignment.
 
         Note that if the input is an mirror-extended sequence, 'flows_forward'
         is not needed, since it is equal to 'flows_backward.flip(1)'.

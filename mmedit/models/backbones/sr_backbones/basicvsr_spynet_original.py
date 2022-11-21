@@ -180,8 +180,6 @@ class BasicVSRSPyNet_Original(nn.Module):
                 backward-time propagation (current to next).
         """
 
-        
-
         n, t, c, h, w = lqs.size()
         
         lqs_1 = lqs[:, :-1, :, :, :].reshape(-1, c, h, w)

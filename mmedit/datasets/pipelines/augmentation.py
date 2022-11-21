@@ -257,7 +257,7 @@ class Flip:
                     for v in results[key]:
                         mmcv.imflip_(v, self.direction)
                         if key == "of_f" or key == "of_b":
-                            v[direct[:,:,self.direction]] *= -1
+                            v[:,:, direct[self.direction]] *= -1
                 else:
                     mmcv.imflip_(results[key], self.direction)
                     if key == "of_f" or key == "of_b":

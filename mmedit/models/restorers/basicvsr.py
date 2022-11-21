@@ -93,6 +93,7 @@ class BasicVSR(BasicRestorer):
         if self.step_counter < self.fix_iter:
             if not self.is_weight_fixed:
                 self.is_weight_fixed = True
+
                 for k, v in self.generator.named_parameters():
                     # if 'spynet' in k or 'edvr' in k or 'raft' in k:
                     if True in [x in k for x in ['raft', 'spynet', 'edvr']]: # check if one of these substring is in k
@@ -107,25 +108,6 @@ class BasicVSR(BasicRestorer):
         gt = outputs['results']['gt']
 
         loss, log_vars = self.parse_losses(outputs.pop('losses'))
-
-        crop_border = self.test_cfg.crop_border
-        convert_to = self.test_cfg.get('convert_to', None)
-        for metric in self.test_cfg.metrics:
-            if output.ndim == 5:  # a sequence: (n, t, c, h, w)
-                avg = []
-                for i in range(0, output.size(1)):
-                    output_i = tensor2img(output[:, i, :, :, :])
-                    gt_i = tensor2img(gt[:, i, :, :, :])
-                    avg.append(self.allowed_metrics[metric](
-                        output_i, gt_i, crop_border, convert_to=convert_to))
-                log_vars[metric] = np.mean(avg).item()
-
-            elif output.ndim == 4:  # an image: (n, c, t, w), for Vimeo-90K-T
-                output_img = tensor2img(output)
-                gt_img = tensor2img(gt)
-                value = self.allowed_metrics[metric](
-                    output_img, gt_img, crop_border, convert_to=convert_to)
-                log_vars[metric] = value.item()
 
         # optimize
         optimizer['generator'].zero_grad()
@@ -150,6 +132,7 @@ class BasicVSR(BasicRestorer):
         Returns:
             dict: Evaluation results.
         """
+
         crop_border = self.test_cfg.crop_border
         convert_to = self.test_cfg.get('convert_to', None)
 
@@ -163,7 +146,6 @@ class BasicVSR(BasicRestorer):
                     avg.append(self.allowed_metrics[metric](
                         output_i, gt_i, crop_border, convert_to=convert_to))
                     
-                    
                 eval_result[metric] = np.mean(avg)
             elif output.ndim == 4:  # an image: (n, c, t, w), for Vimeo-90K-T
                 output_img = tensor2img(output)
@@ -171,19 +153,6 @@ class BasicVSR(BasicRestorer):
                 value = self.allowed_metrics[metric](
                     output_img, gt_img, crop_border, convert_to=convert_to)
                 eval_result[metric] = value
-                
-        #if output.ndim == 5:
-        #    loss = []
-        #    for i in range(0, output.size(1)):
-        #        output_i = output[:, i, :, :, :]
-        #        gt_i = gt[:, i, :, :, :]
-
-        #        loss.append(self.pixel_loss( 
-        #            output_i, gt_i, crop_border))
-        #    eval_result['pixel_loss'] = np.mean(loss)
-
-        loss = self.pixel_loss(output, gt)
-        eval_result['pixel_loss'] = loss.item()
 
         return eval_result
 
@@ -193,8 +162,7 @@ class BasicVSR(BasicRestorer):
                      meta=None,
                      save_image=False,
                      save_path=None,
-                     iteration=None,
-                     **kwargs):
+                     iteration=None):
         """Testing forward function.
 
         Args:
@@ -208,22 +176,12 @@ class BasicVSR(BasicRestorer):
         Returns:
             dict: Output results.
         """
-
         with torch.no_grad():
-            if 'of_b' in [k for k in kwargs.keys()] and 'of_f' in [k for k in kwargs.keys()]:
-                if self.forward_ensemble is not None:
-                  raise NotImplementedError(
-                    'Currently the RAFT precomp optical flow does not'
-                    'support SpatialTemporalEnsemble'
-                  )
-                else:
-                  output = self.generator(lq, **kwargs)
+            if self.forward_ensemble is not None:
+                output = self.forward_ensemble(lq, self.generator)
             else:
-                if self.forward_ensemble is not None:
-                  output = self.forward_ensemble(lq, self.generator)
-                else:
-                  output = self.generator(lq)
-
+                output = self.generator(lq)
+          
         # If the GT is an image (i.e. the center frame), the output sequence is
         # turned to an image.
         if gt is not None and gt.ndim == 4:
@@ -241,6 +199,11 @@ class BasicVSR(BasicRestorer):
             results = dict(lq=lq.cpu(), output=output.cpu())
             if gt is not None:
                 results['gt'] = gt.cpu()
+
+       
+        loss_pix = self.pixel_loss(output, gt)
+        results['eval_result']['loss'] = loss_pix.item()
+
 
         # save image
         if save_image:

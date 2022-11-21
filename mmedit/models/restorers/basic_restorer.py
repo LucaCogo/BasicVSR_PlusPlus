@@ -76,7 +76,7 @@ class BasicRestorer(BaseModel):
 
         return self.forward_train(lq, gt, **kwargs)
 
-    def forward_train(self, lq,gt, **kwargs):
+    def forward_train(self, lq, gt, **kwargs):
         """Training forward function.
 
         Args:
