@@ -131,7 +131,7 @@ class BasicRestorer(BaseModel):
                      save_image=False,
                      save_path=None,
                      iteration=None,
-                     *kwargs):
+                     **kwargs):
         """Testing forward function.
 
         Args:
