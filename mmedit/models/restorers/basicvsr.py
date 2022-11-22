@@ -137,22 +137,33 @@ class BasicVSR(BasicRestorer):
         convert_to = self.test_cfg.get('convert_to', None)
 
         eval_result = dict()
-        for metric in self.test_cfg.metrics:
-            if output.ndim == 5:  # a sequence: (n, t, c, h, w)
-                avg = []
-                for i in range(0, output.size(1)):
-                    output_i = tensor2img(output[:, i, :, :, :])
-                    gt_i = tensor2img(gt[:, i, :, :, :])
-                    avg.append(self.allowed_metrics[metric](
-                        output_i, gt_i, crop_border, convert_to=convert_to))
+        # for metric in self.test_cfg.metrics:
+        #     if output.ndim == 5:  # a sequence: (n, t, c, h, w)
+        #         avg = []
+        #         for i in range(0, output.size(1)):
+        #             output_i = tensor2img(output[:, i, :, :, :])
+        #             gt_i = tensor2img(gt[:, i, :, :, :])
+        #             avg.append(self.allowed_metrics[metric](
+        #                 output_i, gt_i, crop_border, convert_to=convert_to))
                     
-                eval_result[metric] = np.mean(avg)
-            elif output.ndim == 4:  # an image: (n, c, t, w), for Vimeo-90K-T
-                output_img = tensor2img(output)
-                gt_img = tensor2img(gt)
-                value = self.allowed_metrics[metric](
-                    output_img, gt_img, crop_border, convert_to=convert_to)
-                eval_result[metric] = value
+        #         eval_result[metric] = np.mean(avg)
+        #     elif output.ndim == 4:  # an image: (n, c, t, w), for Vimeo-90K-T
+        #         output_img = tensor2img(output)
+        #         gt_img = tensor2img(gt)
+        #         value = self.allowed_metrics[metric](
+        #             output_img, gt_img, crop_border, convert_to=convert_to)
+        #         eval_result[metric] = value
+
+        if output.ndim == 5: # a sequence: (n, t, c, h, w)
+            mse = torch.mean(torch.square(output[0] - gt[0]))
+            psnr = 20. * torch.log10(1. / torch.sqrt(mse))
+            eval_result['psnr'] = psnr.item()
+        elif output.ndim == 4: # an image: (n, c, t, w), for Vimeo-90K-T
+            pass
+
+        loss = self.pixel_loss(output, gt)
+        eval_result['pixel_loss'] = loss.item()
+
 
         return eval_result
 
