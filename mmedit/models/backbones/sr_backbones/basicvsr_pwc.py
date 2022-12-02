@@ -11,7 +11,8 @@ from mmedit.models.backbones.sr_backbones.basicvsr_net import (
 from mmedit.models.common import PixelShufflePack, flow_warp
 from mmedit.models.registry import BACKBONES
 from mmedit.utils import get_root_logger
-
+import math
+from mmedit.models.PWCnet.correlation import correlation
 
 
 
@@ -640,27 +641,27 @@ class PWCnet(torch.nn.Module):
             # end
         # end
 
-        def backwarp(self, tenInput, tenFlow):
-            if str(tenFlow.shape) not in backwarp_tenGrid:
-                tenHor = torch.linspace(-1.0 + (1.0 / tenFlow.shape[3]), 1.0 - (1.0 / tenFlow.shape[3]), tenFlow.shape[3]).view(1, 1, 1, -1).repeat(1, 1, tenFlow.shape[2], 1)
-                tenVer = torch.linspace(-1.0 + (1.0 / tenFlow.shape[2]), 1.0 - (1.0 / tenFlow.shape[2]), tenFlow.shape[2]).view(1, 1, -1, 1).repeat(1, 1, 1, tenFlow.shape[3])
+            def backwarp(self, tenInput, tenFlow):
+                if str(tenFlow.shape) not in backwarp_tenGrid:
+                    tenHor = torch.linspace(-1.0 + (1.0 / tenFlow.shape[3]), 1.0 - (1.0 / tenFlow.shape[3]), tenFlow.shape[3]).view(1, 1, 1, -1).repeat(1, 1, tenFlow.shape[2], 1)
+                    tenVer = torch.linspace(-1.0 + (1.0 / tenFlow.shape[2]), 1.0 - (1.0 / tenFlow.shape[2]), tenFlow.shape[2]).view(1, 1, -1, 1).repeat(1, 1, 1, tenFlow.shape[3])
 
-                backwarp_tenGrid[str(tenFlow.shape)] = torch.cat([ tenHor, tenVer ], 1).cuda()
-            # end
+                    backwarp_tenGrid[str(tenFlow.shape)] = torch.cat([ tenHor, tenVer ], 1).cuda()
+                # end
 
-            if str(tenFlow.shape) not in backwarp_tenPartial:
-                backwarp_tenPartial[str(tenFlow.shape)] = tenFlow.new_ones([ tenFlow.shape[0], 1, tenFlow.shape[2], tenFlow.shape[3] ])
-            # end
+                if str(tenFlow.shape) not in backwarp_tenPartial:
+                    backwarp_tenPartial[str(tenFlow.shape)] = tenFlow.new_ones([ tenFlow.shape[0], 1, tenFlow.shape[2], tenFlow.shape[3] ])
+                # end
 
-            tenFlow = torch.cat([ tenFlow[:, 0:1, :, :] / ((tenInput.shape[3] - 1.0) / 2.0), tenFlow[:, 1:2, :, :] / ((tenInput.shape[2] - 1.0) / 2.0) ], 1)
-            tenInput = torch.cat([ tenInput, backwarp_tenPartial[str(tenFlow.shape)] ], 1)
+                tenFlow = torch.cat([ tenFlow[:, 0:1, :, :] / ((tenInput.shape[3] - 1.0) / 2.0), tenFlow[:, 1:2, :, :] / ((tenInput.shape[2] - 1.0) / 2.0) ], 1)
+                tenInput = torch.cat([ tenInput, backwarp_tenPartial[str(tenFlow.shape)] ], 1)
 
-            tenOutput = torch.nn.functional.grid_sample(input=tenInput, grid=(backwarp_tenGrid[str(tenFlow.shape)] + tenFlow).permute(0, 2, 3, 1), mode='bilinear', padding_mode='zeros', align_corners=False)
+                tenOutput = torch.nn.functional.grid_sample(input=tenInput, grid=(backwarp_tenGrid[str(tenFlow.shape)] + tenFlow).permute(0, 2, 3, 1), mode='bilinear', padding_mode='zeros', align_corners=False)
 
-            tenMask = tenOutput[:, -1:, :, :]; tenMask[tenMask > 0.999] = 1.0; tenMask[tenMask < 1.0] = 0.0
+                tenMask = tenOutput[:, -1:, :, :]; tenMask[tenMask > 0.999] = 1.0; tenMask[tenMask < 1.0] = 0.0
 
-            return tenOutput[:, :-1, :, :] * tenMask
-        # end  
+                return tenOutput[:, :-1, :, :] * tenMask
+            # end  
 
         class Refiner(torch.nn.Module):
             def __init__(self):
@@ -698,7 +699,7 @@ class PWCnet(torch.nn.Module):
 
         self.netRefiner = Refiner()
 
-        self.load_state_dict({ strKey.replace('module', 'net'): tenWeight for strKey, tenWeight in torch.hub.load_state_dict_fromend_url(url='http://content.sniklaus.com/github/pytorch-pwc/network-' + 'default' + '.pytorch', file_name='pwc-' + 'default').items() })
+        self.load_state_dict({ strKey.replace('module', 'net'): tenWeight for strKey, tenWeight in torch.hub.load_state_dict_from_url(url='http://content.sniklaus.com/github/pytorch-pwc/network-' + 'default' + '.pytorch', file_name='pwc-' + 'default').items() })
     # 
 
     def forward(self, tenOne, tenTwo):
