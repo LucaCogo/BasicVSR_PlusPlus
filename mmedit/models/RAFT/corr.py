@@ -27,6 +27,7 @@ class CorrBlock:
             corr = F.avg_pool2d(corr, 2, stride=2)
             self.corr_pyramid.append(corr)
 
+
     def __call__(self, coords):
         #print(f"coords --> {coords.shape}")
 
@@ -49,6 +50,7 @@ class CorrBlock:
             corr = corr.view(batch, h1, w1, -1)
             out_pyramid.append(corr)
 
+        
         out = torch.cat(out_pyramid, dim=-1)
         return out.permute(0, 3, 1, 2).contiguous().float()
 
