@@ -96,7 +96,7 @@ class BasicVSR(BasicRestorer):
 
                 for k, v in self.generator.named_parameters():
                     # if 'spynet' in k or 'edvr' in k or 'raft' in k:
-                    if True in [x in k for x in ['raft', 'spynet', 'edvr', 'lite']]: # check if one of these substring is in k
+                    if True in [x in k for x in ['raft', 'spynet', 'edvr', 'lfn']]: # check if one of these substring is in k
                         v.requires_grad_(False)
         elif self.step_counter == self.fix_iter:
             # train all the parameters

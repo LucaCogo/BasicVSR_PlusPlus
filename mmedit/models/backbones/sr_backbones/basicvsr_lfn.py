@@ -11,7 +11,8 @@ from mmedit.models.backbones.sr_backbones.basicvsr_net import (
 from mmedit.models.common import PixelShufflePack, flow_warp
 from mmedit.models.registry import BACKBONES
 from mmedit.utils import get_root_logger
-
+import math
+from mmedit.models.LiteFlowNet import correlation
 
 
 @BACKBONES.register_module()
@@ -180,7 +181,7 @@ class BasicVSR_LFN(nn.Module):
         tenPreprocessedOne = torch.nn.functional.interpolate(input=lqs_1, size=(intPreprocessedHeight, intPreprocessedWidth), mode='bilinear', align_corners=False)
         tenPreprocessedTwo = torch.nn.functional.interpolate(input=lqs_2, size=(intPreprocessedHeight, intPreprocessedWidth), mode='bilinear', align_corners=False)
 
-        flows_backward = torch.nn.functional.interpolate(input=self.pwc.forward(tenPreprocessedOne, tenPreprocessedTwo), size=(intHeight, intWidth), mode='bilinear', align_corners=False)        
+        flows_backward = torch.nn.functional.interpolate(input=self.lfn.forward(tenPreprocessedOne, tenPreprocessedTwo), size=(intHeight, intWidth), mode='bilinear', align_corners=False)        
         flows_backward[:, 0, :, :] *= float(intWidth) / float(intPreprocessedWidth)
         flows_backward[:, 1, :, :] *= float(intHeight) / float(intPreprocessedHeight)
 
@@ -191,7 +192,7 @@ class BasicVSR_LFN(nn.Module):
         if self.is_mirror_extended:  # flows_forward = flows_backward.flip(1)
             flows_forward = None
         else:
-            flows_forward = torch.nn.functional.interpolate(input=self.pwc.forward(tenPreprocessedTwo, tenPreprocessedOne), size=(intHeight, intWidth), mode='bilinear', align_corners=False)
+            flows_forward = torch.nn.functional.interpolate(input=self.lfn.forward(tenPreprocessedTwo, tenPreprocessedOne), size=(intHeight, intWidth), mode='bilinear', align_corners=False)
             flows_forward[:, 0, :, :] *= float(intWidth) / float(intPreprocessedWidth)
             flows_forward[:, 1, :, :] *= float(intHeight) / float(intPreprocessedHeight)
 
