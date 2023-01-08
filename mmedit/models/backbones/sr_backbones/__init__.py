@@ -8,4 +8,4 @@ from .basicvsraft_precomp import BasicVSRAFT_precomp
 from .basicvsr_pwc import BasicVSRPWC
 from .basicvsr_lfn import BasicVSR_LFN
 
-__all__ = ['BasicVSRNet', 'BasicVSRPlusPlus', 'BasicVSRAFT', 'BasicVSRAFT_precomp','BasicVSR_Farneback', 'BasicVSRSPyNet_Original','BasicVSRPWC', 'from .basicvsr_lfn import BasicVSR_LFN']
+__all__ = ['BasicVSRNet', 'BasicVSRPlusPlus', 'BasicVSRAFT', 'BasicVSRAFT_precomp','BasicVSR_Farneback', 'BasicVSRSPyNet_Original','BasicVSRPWC', 'BasicVSR_LFN']
