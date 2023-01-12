@@ -12,7 +12,7 @@ from mmedit.models.common import PixelShufflePack, flow_warp
 from mmedit.models.registry import BACKBONES
 from mmedit.utils import get_root_logger
 import math
-from mmedit.models.sniklaus_corr import correlation
+from mmedit.models.PWCnet import correlation
 
 
 
