@@ -16,7 +16,7 @@ model = dict(
     )
 # model training and testing settings
 train_cfg = dict(fix_iter=10000)
-test_cfg = dict(metrics=['PSNR', 'SSIM'], crop_border=0)
+test_cfg = dict(metrics=['PSNR', 'SSIM'], convert_to='y',crop_border=0)
 
 # dataset settings
 train_dataset_type = 'SRFolderMultipleGTDataset'
