@@ -119,6 +119,37 @@ class BasicVSR(BasicRestorer):
         outputs.update({'log_vars': log_vars})
         return outputs
 
+    def compute_psnr(img, gt, convert_to):
+        if isinstance(convert_to, str) and convert_to.lower == 'y':
+            img = bgr2ycbcr(img/255.0, y_only = True) * 255.0
+
+        elif convert_to is not None:
+            raise ValueError('Wrong color model. Supported values are '
+                '"Y" and None.')
+        
+        mse = torch.mean(torch.square(img[0] - gt[0]))
+        psnr = 20. * torch.log10(1. / torch.sqrt(mse))
+        return compute_psnr
+
+    def rgb2ycbcr(img, y_only=False):
+        """Convert a RGR image to YCbCr image.
+        The bgr version of rgb2ycbcr.
+        input is mini-batch T x N x 3 x H x W of a RGB image
+        It implements the ITU-R BT.601 conversion for standard-definition
+        television. See more details in
+        https://en.wikipedia.org/wiki/YCbCr#ITU-R_BT.601_conversion.
+        """
+        output = Variable(img.data.new(*img.size()))
+        output[:, :,0, :, :] = img[:, :,0, :, :] * 65.48 + img[:, :,1, :, :] * 128.553 + img[:, :,2, :, :] * 24.966 + 16.0
+        
+        if y_only:
+            return output[:, :,0, :, :]
+        
+        output[:, :,1, :, :] = img[:, :,0, :, :] * (-37.797) + img[:, :,1, :, :] * (-74.203) + img[:, :,2, :, :] * 112.0 + 128.0
+        output[:, :,2, :, :] = img[:, :,0, :, :] * 112.0 + img[:, :,1, :, :] * (-93.786) + img[:, :,2, :, :] * (-18.214) + 128.0
+
+        return output
+
     def evaluate(self, output, gt):
         """Evaluation function.
 
@@ -165,36 +196,7 @@ class BasicVSR(BasicRestorer):
 
         return eval_result
 
-    def compute_psnr(img, gt, convert_to):
-        if isinstance(convert_to, str) and convert_to.lower == 'y':
-            img = bgr2ycbcr(img/255.0, y_only = True) * 255.0
-
-        elif convert_to is not None:
-            raise ValueError('Wrong color model. Supported values are '
-                '"Y" and None.')
-        
-        mse = torch.mean(torch.square(img[0] - gt[0]))
-        psnr = 20. * torch.log10(1. / torch.sqrt(mse))
-        return compute_psnr
-
-    def rgb2ycbcr(img, y_only=False):
-        """Convert a RGR image to YCbCr image.
-        The bgr version of rgb2ycbcr.
-        input is mini-batch T x N x 3 x H x W of a RGB image
-        It implements the ITU-R BT.601 conversion for standard-definition
-        television. See more details in
-        https://en.wikipedia.org/wiki/YCbCr#ITU-R_BT.601_conversion.
-        """
-        output = Variable(img.data.new(*img.size()))
-        output[:, :,0, :, :] = img[:, :,0, :, :] * 65.48 + img[:, :,1, :, :] * 128.553 + img[:, :,2, :, :] * 24.966 + 16.0
-        
-        if y_only:
-            return output[:, :,0, :, :]
-        
-        output[:, :,1, :, :] = img[:, :,0, :, :] * (-37.797) + img[:, :,1, :, :] * (-74.203) + img[:, :,2, :, :] * 112.0 + 128.0
-        output[:, :,2, :, :] = img[:, :,0, :, :] * 112.0 + img[:, :,1, :, :] * (-93.786) + img[:, :,2, :, :] * (-18.214) + 128.0
-
-        return output
+    
 
 
     def forward_test(self,
