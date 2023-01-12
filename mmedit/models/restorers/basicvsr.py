@@ -119,19 +119,7 @@ class BasicVSR(BasicRestorer):
         outputs.update({'log_vars': log_vars})
         return outputs
 
-    def compute_psnr(img, gt, convert_to):
-        if isinstance(convert_to, str) and convert_to.lower == 'y':
-            img = bgr2ycbcr(img/255.0, y_only = True) * 255.0
-
-        elif convert_to is not None:
-            raise ValueError('Wrong color model. Supported values are '
-                '"Y" and None.')
-        
-        mse = torch.mean(torch.square(img[0] - gt[0]))
-        psnr = 20. * torch.log10(1. / torch.sqrt(mse))
-        return compute_psnr
-
-    def rgb2ycbcr(img, y_only=False):
+    def rgb2ycbcr(self, img, y_only=False):
         """Convert a RGR image to YCbCr image.
         The bgr version of rgb2ycbcr.
         input is mini-batch T x N x 3 x H x W of a RGB image
@@ -139,7 +127,7 @@ class BasicVSR(BasicRestorer):
         television. See more details in
         https://en.wikipedia.org/wiki/YCbCr#ITU-R_BT.601_conversion.
         """
-        output = Variable(img.data.new(*img.size()))
+        output = torch.zeros_like(img).cuda()
         output[:, :,0, :, :] = img[:, :,0, :, :] * 65.48 + img[:, :,1, :, :] * 128.553 + img[:, :,2, :, :] * 24.966 + 16.0
         
         if y_only:
@@ -149,6 +137,21 @@ class BasicVSR(BasicRestorer):
         output[:, :,2, :, :] = img[:, :,0, :, :] * 112.0 + img[:, :,1, :, :] * (-93.786) + img[:, :,2, :, :] * (-18.214) + 128.0
 
         return output
+
+    def compute_psnr(self, img, gt, convert_to):
+        L = 1.
+        if isinstance(convert_to, str) and convert_to.lower() == 'y':
+            L = 255.
+            img = self.rgb2ycbcr(img, y_only = True)
+            gt = self.rgb2ycbcr(gt, y_only = True)
+
+        elif convert_to is not None:
+            raise ValueError('Wrong color model. Supported values are '
+                '"Y" and None.')
+        
+        mse = torch.mean(torch.square(img[0] - gt[0]))
+        psnr = 20. * torch.log10(L / torch.sqrt(mse))
+        return psnr
 
     def evaluate(self, output, gt):
         """Evaluation function.
@@ -186,18 +189,15 @@ class BasicVSR(BasicRestorer):
         #         eval_result[metric] = value
 
         if output.ndim == 5: # a sequence: (n, t, c, h, w)
-            psnr = compute_psnr(output, gt, convert_to)
+            psnr = self.compute_psnr(output, gt, convert_to)
             eval_result['PSNR'] = psnr.item()
         elif output.ndim == 4: # an image: (n, c, t, w), for Vimeo-90K-T
             pass
         
-        loss = self.pixel_loss(output, gt)
-        eval_result['pixel_loss'] = loss.item()
+        #loss = self.pixel_loss(output, gt)
+        #eval_result['pixel_loss'] = loss.item()
 
         return eval_result
-
-    
-
 
     def forward_test(self,
                      lq,
