@@ -133,5 +133,7 @@ mmedit/.mim
 .DS_Store
 
 
-data/**
+data/REDS_ridotto
+data/REDStest4
+data/REDSval4
 
